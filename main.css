@@ -1,5 +1,23 @@
+
 #Project_Description {
     color: black;
     font-size: 18px;
     font-family: 'Times New Roman', Times, serif;
+}
+
+.project-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 100px 100px rgba(7, 114, 164, 0.1);
+    margin: auto;
+}
+
+.team-info {
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 25px rgba(7, 114, 164, 0.1);
+    border-radius:8px;
+    margin-bottom:20px;
+
 }
