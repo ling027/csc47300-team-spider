@@ -78,3 +78,39 @@ body {
     margin: 6px 0;
   }
   
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 16px 0 20px;
+  }
+  
+  .input, .select {
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f172a;
+    min-width: 200px;
+  }
+  
+  .input { flex: 1 1 260px; }
+  
+  .btn {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #0f172a;
+    border-radius: 6px;
+    cursor: default; 
+  }
+  
+  .btn:hover { background: #f1f5f9; }
+  
+  .visually-hidden {
+    position: absolute !important;
+    height: 1px; width: 1px;
+    overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap; border: 0; padding: 0; margin: -1px;
+  }
