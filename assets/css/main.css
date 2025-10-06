@@ -114,3 +114,48 @@ body {
     overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
     white-space: nowrap; border: 0; padding: 0; margin: -1px;
   }
+
+
+.container {
+    max-width: none;      
+    width: 80%;
+    padding: 16px;
+  }
+  
+  .watchlist-table {
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .wl-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .wl-table th, .wl-table td {
+    border-top: 1px solid #e5e7eb;
+    padding: 12px 10px;
+    text-align: left;
+  }
+  
+  .wl-table thead th {
+    background: #f1f5f9;
+    text-align: left;
+  }
+  
+  .wl-table .right {
+    text-align: right;
+  }
+  
+  .btn.danger {
+    padding: 6px 10px;
+    border: 1px solid #fecaca;
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-radius: 6px;
+    cursor: default;
+  }
+  .btn.danger:hover {
+    background: #fecaca;
+  }
+  
