@@ -3,6 +3,7 @@ body {
     font-family: Arial, sans-serif;
     background: #f8fafc;
     color: #0f172a;
+    min-height:120vh;
   }
   
   .container {
@@ -43,6 +44,8 @@ body {
     flex-wrap: wrap;         
     gap: 16px;               
     justify-content: center; 
+    margin-top:40px;
+    gap:20px;
   }
   
   .card {
@@ -158,4 +161,5 @@ body {
   .btn.danger:hover {
     background: #fecaca;
   }
-  
+
+

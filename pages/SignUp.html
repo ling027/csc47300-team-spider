@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../assets/Signup.css" />
+        <link rel="stylesheet" href="../assets/css/Main.css" />
+        
+    </head>
+
+    <body>
+             
+        <section class="site-header">
+            <h1 class="brand">Team Spider - Movie Ratings</h1>
+            <nav class="links">
+                <a href="home.html">Home</a>
+                <a href="browse.html">Browse</a>
+                <a href="watchlist.html">Watchlist</a>
+                <a href="Login.html"> Login</a>
+            </nav>
+        </section>
+
+        <main class="signup-page">
+            <div class="signup-container" >
+                <h1>Sign Up</h1>
+                <form action="/signup" method="post">
+                <label for ="fullname">Your Name</label>
+                <br/>
+                <input type="text" class="signup-input" name="fullname" placeholder="Your First and Last Name" required />
+                <br />
+
+                <label for ="Email">Your Email</label>
+                <br/>
+                <input type="text" class="signup-input" name="Email" placeholder="Your Email" />
+                <br />
+
+                <label for="username">Username:</label>
+                 <br />
+                <input type="text" class="signup-input" name="username" placeholder="Your Uername" required />
+                <br />
+
+                <label for="password">Password:</label>
+                 <br />
+                <input type="password" class="signup-input" name="password" placeholder="Your Password" required />
+                <br />
+
+                <label for="Re-enter_password">Re-Enter Password:</label>
+                 <br />
+                <input type="password" class="signup-input" name="Re-enter_password" placeholder="re-enter your password" required />
+                <br />
+                
+                <button type="submit" class="login-button">Sign Up</button>
+            </form>
+        </div>
+        </main>
+    </body>
+</html>
