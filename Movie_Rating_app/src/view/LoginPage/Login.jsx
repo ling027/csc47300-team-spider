@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="../assets/css/main.css" />
-         <link rel="stylesheet" href="../assets/css/Login.css" />
-    </head>
+import "../main.css"
+import "./Login.css"
+import NavBar from "../Component/Navbar.jsx"
+import {Link, useNavigate} from 'react-router-dom';
 
-    <body>     
-        <section class="site-header">
-            <h1 class="brand">Team Spider - Movie Ratings</h1>
-            <nav class="links">
-                <a href="home.html">Home</a>
-                <a href="browse.html">Browse</a>
-                <a href="watchlist.html">Watchlist</a>
-                <a href="Login.html"> Login</a>
-            </nav>
-        </section>
+function Login(){
+    return(
+         <body>     
+        <header class="site-header">
+           <NavBar/>
+        </header>
 
         <main class="login-page">
             
@@ -33,8 +26,14 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
 
-            <a href="SignUp.html" class="signup-link">Don't have an account? Sign Up</a>
+            <Link to="/SignUp" class="signup-link">Don't have an account? Sign Up</Link>
         </div>
         </main>
     </body>
-</html>
+
+    );
+}
+
+export default Login;
+
+   

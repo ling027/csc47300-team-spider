@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="../assets/Signup.css" />
-        <link rel="stylesheet" href="../assets/css/Main.css" />
-        
-    </head>
+import "../main.css"
+import "./Signup.css"
+import NavBar from "../Component/Navbar.jsx"
 
-    <body>
+function SignUp(){
+    return(
+        <body>
              
         <section class="site-header">
-            <h1 class="brand">Team Spider - Movie Ratings</h1>
-            <nav class="links">
-                <a href="home.html">Home</a>
-                <a href="browse.html">Browse</a>
-                <a href="watchlist.html">Watchlist</a>
-                <a href="Login.html"> Login</a>
-            </nav>
+            <NavBar/>
         </section>
 
         <main class="signup-page">
@@ -53,4 +44,9 @@
         </div>
         </main>
     </body>
-</html>
+
+    );
+}
+
+export default SignUp;
+    

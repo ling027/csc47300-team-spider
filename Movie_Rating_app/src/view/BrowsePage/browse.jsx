@@ -1,21 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Browse Movies – Team Spider</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-</head>
+import "../main.css"
+import NavBar from "../Component/Navbar.jsx"
+
+function Browse(){
+  return(
 <body>
   <header class="site-header">
-    <h1 class="brand">Team Spider - Movie Ratings</h1>
-    <nav class="links">
-      <a href="home.html">Home</a>
-      <a href="browse.html">Browse</a>
-      <a href="watchlist.html">Watchlist</a>
-      <a href="Login.html"> Login</a>
-     
-    </nav>
+    <NavBar/>
   </header>
 
   <main class="container">
@@ -23,7 +13,7 @@
       <h2>Browse Movies</h2>
     </section>
 
-    <!-- Non-functional toolbar -->
+ 
     <form class="toolbar" role="search" aria-label="Movie search (visual only)">
       <label class="visually-hidden" for="q">Search</label>
       <input id="q" class="input" type="search" placeholder="Search by title or year…" />
@@ -88,4 +78,7 @@
     </section>
   </main>
 </body>
-</html>
+  );
+}
+
+export default Browse;

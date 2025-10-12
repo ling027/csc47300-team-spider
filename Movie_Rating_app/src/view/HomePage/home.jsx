@@ -1,21 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Team Spider — Movie Ratings</title>
-  <link rel="stylesheet" href="../assets/css/main.css" />
-</head>
-<body>
+import "../main.css"
+import NavBar from "../Component/Navbar.jsx"
+
+function Home(){
+  return(
+    <body>
   <header class="site-header">
-    <h1 class="brand">Team Spider - Movie Ratings</h1>
-    <nav class="links">
-      <a href="home.html">Home</a>
-      <a href="browse.html">Browse</a>
-      <a href="watchlist.html">Watchlist</a>
-      <a href="Login.html"> Login</a>
-   
-    </nav>
+    <NavBar/>
   </header>
 
   <main class="container">
@@ -56,4 +46,9 @@
 
 
 </body>
-</html>
+
+  );
+}
+
+export default Home;
+
