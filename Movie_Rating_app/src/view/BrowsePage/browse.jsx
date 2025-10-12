@@ -1,5 +1,6 @@
 import "../main.css"
 import NavBar from "../Component/Navbar.jsx"
+import {Link, useNavigate} from 'react-router-dom';
 
 function Browse(){
   return(
@@ -41,12 +42,14 @@ function Browse(){
     </form>
 
     <section class="movies-row">
+      <Link to="/inception">
       <article class="card movie-card">
         <div class="poster" aria-hidden="true">Poster</div>
         <h3>Inception</h3>
         <p class="meta">2010</p>
         <p class="stars">★ ★ ★ ★ ☆</p>
       </article>
+      </Link>
 
       <article class="card movie-card">
         <div class="poster" aria-hidden="true">Poster</div>

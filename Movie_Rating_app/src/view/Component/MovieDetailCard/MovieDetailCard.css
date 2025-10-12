@@ -1,0 +1,81 @@
+
+.Movie-Infor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
+  color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+.MovieTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: left;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+}
+
+.visual-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.poster {
+  width: 300px;
+  height:450px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  object-fit: cover;
+}
+
+.trailer {
+  width:auto;
+  height:450px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+.Genre-Container {
+  font-weight: 600;
+  color: #ffdd59;
+}
+
+.description {
+  line-height: 1.6;
+  font-size: 1rem;
+  color: #e0e0e0;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 8px;
+  width:99%;
+}
+
+.Team-infor {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #ccc;
+  background-color: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 8px;
+  white-space: pre-line; /* Keeps line breaks in your cast text */
+  width:99%;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .visual-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .poster, .trailer {
+    max-width: 90%;
+  }
+}
