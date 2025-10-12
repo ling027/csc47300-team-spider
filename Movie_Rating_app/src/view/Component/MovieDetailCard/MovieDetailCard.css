@@ -27,7 +27,7 @@
   align-items: center;
   flex-wrap: wrap;
 }
-.poster {
+.MoviePoster {
   width: 300px;
   height:450px;
   border-radius: 10px;
@@ -75,7 +75,7 @@
     align-items: center;
   }
 
-  .poster, .trailer {
+  .MoviePoster, .trailer {
     max-width: 90%;
   }
 }

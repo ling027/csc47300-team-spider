@@ -6,7 +6,7 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
             <h1 className="MovieTitle">{title}</h1>
             <p>{DOR} • {rating} • {length}</p>
             <section className="visual-container">
-                <img className="poster" src={poster}/>
+                <img className="MoviePoster" src={poster}/>
                 <video className="trailer" muted loop controls autoPlay>
                     <source src={trailer}/>
                 </video>
