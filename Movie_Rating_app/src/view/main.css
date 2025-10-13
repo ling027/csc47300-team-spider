@@ -51,12 +51,14 @@
 
 
   .movies-row {
-    display: flex;           
-    flex-wrap: wrap;         
-    gap: 16px;               
-    justify-content: center; 
-    margin-top:40px;
-    gap:20px;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;   
+    justify-content: flex-start;     
+    flex-wrap: nowrap;    
+    gap: 20px;
+    scroll-behavior: smooth;
+    margin-bottom:20px;
   }
   
   .card {
