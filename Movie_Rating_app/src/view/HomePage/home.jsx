@@ -1,9 +1,12 @@
 import "../main.css"
+import "../Component/MovieDetailCard/MovieDetailCard.css"
 import NavBar from "../Component/Navbar.jsx"
 import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
 
 function Home(){
+  const EEAAO = movies.find((m) => m.id === 2);
+
   return(
     <div className="body">
       <header class="site-header">
@@ -11,6 +14,14 @@ function Home(){
       </header>
 
       <main class="container">
+        <section className="welcome-container">
+          <Link to={ `/movie/${EEAAO.id}`}>
+          <section className="promoted-container">
+            <img src={EEAAO.poster} className="PromotedPoster"/>
+            <video src={EEAAO.trailer} muted autoPlay loop className="PromotedTrailer"></video>
+          </section>
+          </Link>
+        </section>
         <section class="hero">
           <h2>Discover and rate movies</h2>
         </section>
