@@ -1,5 +1,7 @@
 import "../main.css"
 import NavBar from "../Component/Navbar.jsx"
+import {Link} from 'react-router-dom';
+import {movies} from "../MovieDetailPage/movies.js";
 
 function Home(){
   return(
@@ -14,34 +16,17 @@ function Home(){
         </section>
 
       <section class="movies-row">
-        <article class="card movie-card">
-          <div class="poster" aria-hidden="true">Poster</div>
-          <h3>Inception</h3>
-          <p class="meta">2010</p>
-          <p class="stars">★ ★ ★ ★ ☆</p>
-        </article>
-
-      <article class="card movie-card">
-        <div class="poster" aria-hidden="true">Poster</div>
-        <h3>Interstellar</h3>
-        <p class="meta">2014</p>
-        <p class="stars">★ ★ ★ ★ ★</p>
-      </article>
-
-      <article class="card movie-card">
-        <div class="poster" aria-hidden="true">Poster</div>
-        <h3>Arrival</h3>
-        <p class="meta">2016</p>
-        <p class="stars">★ ★ ★ ★ ☆</p>
-      </article>
-
-      <article class="card movie-card">
-        <div class="poster" aria-hidden="true">Poster</div>
-        <h3>Dune</h3>
-        <p class="meta">2021</p>
-        <p class="stars">★ ★ ★ ★ ☆</p>
-      </article>
-    </section>
+         {movies.map((movie) => (
+            <div key={movie.id} className="card">
+            <Link to={`/movie/${movie.id}`}>
+               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
+               <h3 style={{width:"200px"}}>{movie.title}</h3>
+                <p class="meta">2010</p>
+              <p class="stars">★ ★ ★ ★ ☆</p>
+            </Link>
+        </div>
+      ))}
+      </section>
   </main>
 
 

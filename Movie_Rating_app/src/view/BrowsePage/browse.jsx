@@ -45,10 +45,10 @@ function Browse(){
       <section class="movies-row">
         
           {movies.map((movie) => (
-            <div key={movie.id} className="movie-card">
+            <div key={movie.id} className="card">
             <Link to={`/movie/${movie.id}`}>
                <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-               <h3>{movie.title}</h3>
+               <h3 style={{width:"200px"}}>{movie.title}</h3>
                 <p class="meta">2010</p>
               <p class="stars">★ ★ ★ ★ ☆</p>
             </Link>
