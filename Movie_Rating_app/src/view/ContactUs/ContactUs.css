@@ -1,0 +1,79 @@
+/* Contact Us Page styles */
+
+/* Container and general layout */
+.ContactUs-container {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    align-items: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 1px;
+    box-shadow: 0 4px 8px rgba(70, 213, 98, 0.1);
+    width: 100%;
+    max-width: 600px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1); 
+    font-family: 'Courier New', Courier, monospace;
+    color:black;
+    font-weight: bold;
+    margin: 100px auto;
+}
+
+.ContactUs-container h1{
+  text-align: center;
+}
+
+/* Information section styling */
+.infor-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 1px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+.infor-section p {
+  font-size: 16px;
+  color: #333;
+  margin: 10px 0;
+}
+
+/* Form styling */
+.enter-section {
+  border-radius: 1px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.Contactus-Input {
+  width: 90%;
+  padding: 8px;
+  border-radius: 1px;
+  border: 1px solid #ccc;
+  display: block;
+}
+
+.sub-button {
+  display: block;  /* Ensures that the button is a block-level element */
+  width: 25%;      /* Width of the button */
+  padding: 10px 20px; /* Padding for the button */
+  margin: 20px auto; /* Auto margins on left and right for horizontal centering */
+  border-radius: 50px;
+  border: none;
+  background-color: rgb(85, 110, 31); /* Thematic color from the landing page */
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Labels styling */
+label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 16px;
+}
+

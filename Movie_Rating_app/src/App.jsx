@@ -8,6 +8,7 @@ import SignUp from "./view/SignUpPage/SignUp.jsx"
 import WatchList from "./view/WatchListPage/watchlist.jsx"
 import Inception from "./view/MovieDetailPage/InceptionDetail.jsx"
 import MovieDetailPage from "./view/MovieDetailPage/MovieDetailPage.jsx"
+import ContactUs from "./view/ContactUs/ContactUs.jsx"
 
 function App() {
   const [count, setCount] = useState(0)
@@ -22,6 +23,7 @@ function App() {
         <Route path="/watchlist" element={<WatchList/>}/>
         <Route path="/inception" element={<Inception/>}/>
         <Route path="/movie/:id" element={<MovieDetailPage/>}/>
+        <Route path="/ContactUs" element={<ContactUs/>}/>
       </Routes>
     </Router>
   );
