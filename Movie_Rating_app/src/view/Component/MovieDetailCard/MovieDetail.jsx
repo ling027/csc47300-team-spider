@@ -10,7 +10,7 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
                 <header class="site-header" >
                     <NavBar/>
                 </header>
-                
+             <div className="MovieDetail-Container"> 
             <h1 className="MovieTitle">{title}</h1>
             <p>{DOR} • {rating} • {length}</p>
             <section className="visual-container">
@@ -31,9 +31,10 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
                     </button>
                 </section>
                 <section className="comments">
-                    
+
                 </section>
             </section>
+            </div> 
         </div>
 
  
