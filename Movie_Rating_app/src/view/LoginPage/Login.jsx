@@ -5,7 +5,7 @@ import {Link, useNavigate} from 'react-router-dom';
 
 function Login(){
     return(
-         <body>     
+        <div className="body">     
         <header class="site-header">
            <NavBar/>
         </header>
@@ -29,7 +29,7 @@ function Login(){
             <Link to="/SignUp" class="signup-link">Don't have an account? Sign Up</Link>
         </div>
         </main>
-    </body>
+    </div>
 
     );
 }

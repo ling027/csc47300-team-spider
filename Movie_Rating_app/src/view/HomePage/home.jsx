@@ -3,23 +3,23 @@ import NavBar from "../Component/Navbar.jsx"
 
 function Home(){
   return(
-    <body>
-  <header class="site-header">
-    <NavBar/>
-  </header>
+    <div className="body">
+      <header class="site-header">
+        <NavBar/>
+      </header>
 
-  <main class="container">
-    <section class="hero">
-      <h2>Discover and rate movies</h2>
-    </section>
+      <main class="container">
+        <section class="hero">
+          <h2>Discover and rate movies</h2>
+        </section>
 
-    <section class="movies-row">
-      <article class="card movie-card">
-        <div class="poster" aria-hidden="true">Poster</div>
-        <h3>Inception</h3>
-        <p class="meta">2010</p>
-        <p class="stars">★ ★ ★ ★ ☆</p>
-      </article>
+      <section class="movies-row">
+        <article class="card movie-card">
+          <div class="poster" aria-hidden="true">Poster</div>
+          <h3>Inception</h3>
+          <p class="meta">2010</p>
+          <p class="stars">★ ★ ★ ★ ☆</p>
+        </article>
 
       <article class="card movie-card">
         <div class="poster" aria-hidden="true">Poster</div>
@@ -45,7 +45,7 @@ function Home(){
   </main>
 
 
-</body>
+</div>
 
   );
 }

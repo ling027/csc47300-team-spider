@@ -4,7 +4,7 @@ import NavBar from "../Component/Navbar.jsx"
 
 function SignUp(){
     return(
-        <body>
+        <div className="body">
              
         <section class="site-header">
             <NavBar/>
@@ -43,7 +43,7 @@ function SignUp(){
             </form>
         </div>
         </main>
-    </body>
+    </div>
 
     );
 }

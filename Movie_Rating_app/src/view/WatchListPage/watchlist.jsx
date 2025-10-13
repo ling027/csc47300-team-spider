@@ -3,7 +3,7 @@ import NavBar from "../Component/Navbar.jsx"
 
 function WatchList(){
   return(
-    <body>
+    <div className="body">
   <header class="site-header">
     <NavBar/>
   </header>
@@ -52,7 +52,7 @@ function WatchList(){
       </table>
     </section>
   </main>
-</body>
+</div>
 
   );
 }
