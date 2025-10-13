@@ -1,6 +1,4 @@
-/* Contact Us Page styles */
 
-/* Container and general layout */
 .ContactUs-container {
     display: flex;
     flex-direction: column;
@@ -24,7 +22,6 @@
   text-align: center;
 }
 
-/* Information section styling */
 .infor-section {
   background-color: white;
   padding: 20px;
@@ -41,7 +38,6 @@
   margin: 10px 0;
 }
 
-/* Form styling */
 .enter-section {
   border-radius: 1px;
   width: 100%;
@@ -51,25 +47,25 @@
 .Contactus-Input {
   width: 90%;
   padding: 8px;
-  border-radius: 1px;
+  border-radius: 10px;
   border: 1px solid #ccc;
   display: block;
 }
 
 .sub-button {
-  display: block;  /* Ensures that the button is a block-level element */
-  width: 25%;      /* Width of the button */
-  padding: 10px 20px; /* Padding for the button */
-  margin: 20px auto; /* Auto margins on left and right for horizontal centering */
+  display: block; 
+  width: 25%;      
+  padding: 10px 20px; 
+  margin: 20px auto; 
   border-radius: 50px;
   border: none;
-  background-color: rgb(85, 110, 31); /* Thematic color from the landing page */
+  background-color: mediumaquamarine; 
   color: white;
   cursor: pointer;
   font-weight: bold;
 }
 
-/* Labels styling */
+
 label {
   display: block;
   margin-bottom: 5px;

@@ -9,7 +9,6 @@ function NavBar() {
             <Link to="/browse">Browse</Link>
             <Link to="/watchlist">Watch List</Link>
             <Link to="/Login">Login</Link>
-            <Link to="/SignUp">SignUp</Link>
             <Link to="/contactus">Contact Us</Link>
         </nav>
     );
