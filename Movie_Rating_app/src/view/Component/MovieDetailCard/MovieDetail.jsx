@@ -22,6 +22,18 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
             <p className="Genre-Container">Genre: {genre}</p>
             <p className="description">{description}</p>
             <p className="Team-infor">{casts}</p>
+
+            <section className="comment-container">
+                <section className="comment-section">
+                    <input name="Message" placeholder="Give us your thoughts!" className="comment" required/>  
+                    <button className="comment-btn" type="submit" >
+                    Submit
+                    </button>
+                </section>
+                <section className="comments">
+                    
+                </section>
+            </section>
         </div>
 
  
