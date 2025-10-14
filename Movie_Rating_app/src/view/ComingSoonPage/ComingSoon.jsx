@@ -32,7 +32,7 @@ function ComingSoonCard({ m }) {
 
       <div key={m.id} className="cs-actions">
         {/* Optional: deep-link to a future details page id space */}
-        <Link to={`/movie/coming-soon/${m.id}`} className="cs-btn cs-btn-ghost" >
+        <Link to={`/movie/coming-soon/${m.id}/${m.title}`} className="cs-btn cs-btn-ghost" >
           Details
         </Link>
         <button className="cs-btn">Add to Watchlist</button>

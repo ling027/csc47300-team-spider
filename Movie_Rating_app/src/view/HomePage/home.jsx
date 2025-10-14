@@ -30,11 +30,10 @@ function Home(){
       <section class="movies-row">
          {movies.map((movie) => (
             <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}`}>
+            <Link to={`/movie/${movie.id}/${movie.title}`}>
                <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
+                <p class="stars">★ ★ ★ ★ ☆</p>
                <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta" >{movie.DOR}</p>
-              <p class="stars">★ ★ ★ ★ ☆</p>
             </Link>
         </div>
       ))}
@@ -47,7 +46,7 @@ function Home(){
       <section class="movies-row">
          {upcomingMovies.map((movie) => (
             <div key={movie.id} className="card">
-            <Link to={`/movie/coming-soon/${movie.id}`} >
+            <Link to={`/movie/coming-soon/${movie.id}/${movie.title}`} >
                <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px", borderRadius:"16px"}}src={movie.poster}/></div>
                <h3 className="moviecard-title">{movie.title}</h3>
                 <p class="meta">{movie.DOR}</p>

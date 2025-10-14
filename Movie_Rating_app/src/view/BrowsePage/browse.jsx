@@ -46,11 +46,10 @@ function Browse(){
         
           {movies.map((movie) => (
             <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}`}>
+            <Link to={`/movie/${movie.id}/${movie.title}`}>
                <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta">2010</p>
               <p class="stars">★ ★ ★ ★ ☆</p>
+               <h3 className="moviecard-title">{movie.title}</h3>
             </Link>
         </div>
       ))}
