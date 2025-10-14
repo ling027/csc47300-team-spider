@@ -211,4 +211,34 @@
     align-items: center;
   }
 
-
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;   
+    padding: 12px 18px;
+  }
+  
+  .nav-left .nav-link {
+    margin-right: 16px;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 500;
+  }
+  .nav-left .nav-link.active { color: mediumaquamarine; }
+  
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lang-label { color: #fff; }
+  .lang-select {
+    background: #2b2b44;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .lang-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(102,255,204,0.4); }
+  

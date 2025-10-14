@@ -77,3 +77,38 @@ export const movies=[
         length:`139 min`
     },
 ];
+export const upcomingMovies = [
+    {
+      id: 101,
+      title: "Spider-Man: Brand New Day",
+      poster: "https://posterspy.com/wp-content/uploads/2025/04/SPIDER-MAN-BRAND-NEW-DAY.jpg",
+      genre: "Sci-Fi, Adventure",
+      DOR: "July 31, 2026",
+      rating: "PG-13",
+      length: "165 min",
+      synopsis:
+        "Spider-Man: Brand New Day is an upcoming American superhero film based on the Marvel Comics character Spider-Man, co-produced by Columbia Pictures and Marvel Studios, and distributed by Sony Pictures Releasing.",
+    },
+    {
+      id: 102,
+      title: "Animal Friends",
+      poster: "https://a.ltrbxd.com/resized/film-poster/1/0/0/5/0/0/5/1005005-animal-friends-0-230-0-345-crop.jpg?v=ccd62e9c52",
+      genre: "Comedy, Action",
+      DOR: "May 1, 2026",
+      rating: "PG",
+      length: "130 min",
+      synopsis:
+        "Animal Friends is an upcoming American live-action animated road comedy film directed by Peter Atencio and written by Kevin Burrows and Matt Mider. The film stars Ryan Reynolds, Jason Momoa, Vince Vaughn, Eric André, Addison Rae, Ellie Bamber, Rob Delaney, Lil Rel Howery, Dan Levy, and Aubrey Plaza.",
+    },
+    {
+      id: 103,
+      title: "Greenland 2: Migration",
+      poster: "https://m.media-amazon.com/images/M/MV5BOWE3ZmQxNzMtNGE2NC00ZmFjLWIwNmYtMThmNTUzMmM2NWEwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+      genre: "Thriller, Action",
+      DOR: "January 9, 2026",
+      rating: "PG-13",
+      length: "170 min",
+      synopsis:
+        "In the aftermath of a comet strike that decimated most of the planet, the Garrity family must leave the safety of their Greenland bunker to traverse a shattered world in search of a new home.",
+    },
+  ];
