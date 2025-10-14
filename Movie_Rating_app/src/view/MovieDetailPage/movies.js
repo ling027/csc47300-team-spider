@@ -79,7 +79,7 @@ export const movies=[
 ];
 export const upcomingMovies = [
     {
-      id: 101,
+      id: 1,
       title: "Spider-Man: Brand New Day",
       poster: "https://posterspy.com/wp-content/uploads/2025/04/SPIDER-MAN-BRAND-NEW-DAY.jpg",
       genre: "Sci-Fi, Adventure",
@@ -90,7 +90,7 @@ export const upcomingMovies = [
         "Spider-Man: Brand New Day is an upcoming American superhero film based on the Marvel Comics character Spider-Man, co-produced by Columbia Pictures and Marvel Studios, and distributed by Sony Pictures Releasing.",
     },
     {
-      id: 102,
+      id: 2,
       title: "Animal Friends",
       poster: "https://a.ltrbxd.com/resized/film-poster/1/0/0/5/0/0/5/1005005-animal-friends-0-230-0-345-crop.jpg?v=ccd62e9c52",
       genre: "Comedy, Action",
@@ -101,7 +101,7 @@ export const upcomingMovies = [
         "Animal Friends is an upcoming American live-action animated road comedy film directed by Peter Atencio and written by Kevin Burrows and Matt Mider. The film stars Ryan Reynolds, Jason Momoa, Vince Vaughn, Eric André, Addison Rae, Ellie Bamber, Rob Delaney, Lil Rel Howery, Dan Levy, and Aubrey Plaza.",
     },
     {
-      id: 103,
+      id: 3,
       title: "Greenland 2: Migration",
       poster: "https://m.media-amazon.com/images/M/MV5BOWE3ZmQxNzMtNGE2NC00ZmFjLWIwNmYtMThmNTUzMmM2NWEwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
       genre: "Thriller, Action",

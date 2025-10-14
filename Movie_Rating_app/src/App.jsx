@@ -9,8 +9,9 @@ import SignUp from "./view/SignUpPage/SignUp.jsx"
 import WatchList from "./view/WatchListPage/watchlist.jsx"
 import ComingSoon from "./view/ComingSoonPage/ComingSoon.jsx"
 import Inception from "./view/MovieDetailPage/InceptionDetail.jsx"
-import MovieDetailPage from "./view/MovieDetailPage/MovieDetailPage.jsx"
+import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
+import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
 
 function App() {
   const [count, setCount] = useState(0)
@@ -28,6 +29,7 @@ function App() {
         <Route path="/inception" element={<Inception/>}/>
         <Route path="/movie/:id" element={<MovieDetailPage/>}/>
         <Route path="/ContactUs" element={<ContactUs/>}/>
+        <Route path="/movie/coming-soon/:id" element={<UCMoiveDetailPage/>}/>
       </Routes>
     </Router>
     </LanguageProvider>

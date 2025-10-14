@@ -3,7 +3,7 @@ import "../../main.css"
 import NavBar from "../Navbar.jsx"
 
 
-const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,casts,length })=>{
+const MovieDetail = ({title, poster, trailer, genre, DOR, synopsis, rating,casts,length })=>{
     return(
         <>
         <header className="site-header">
@@ -22,7 +22,7 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
                     </video>
                 </section>
                 <p className="Genre-Container">Genre: {genre}</p>
-                <p className="description">{description}</p>
+                <p className="description">{synopsis}</p>
                 <p className="Team-infor">{casts}</p>
             </div> 
         </div>
@@ -31,3 +31,4 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
 }
 
 export default MovieDetail;
+

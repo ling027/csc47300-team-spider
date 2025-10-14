@@ -26,13 +26,13 @@
     width:100%;
     height:50px;
   }
-  
+
   .links a {
-    
+    font-family: 'Courier New', Courier, monospace;
     margin: 0 20px;
     text-decoration: none;
     color: white;
-    font-weight: bold;
+    font-size: 20px;
   }
   
   .links a:hover {
@@ -225,7 +225,7 @@
     font-weight: 500;
   }
   .nav-left .nav-link.active { color: mediumaquamarine; }
-  
+
   .nav-right {
     display: flex;
     align-items: center;
