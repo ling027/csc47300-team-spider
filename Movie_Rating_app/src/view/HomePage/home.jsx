@@ -4,6 +4,7 @@ import NavBar from "../Component/Navbar.jsx"
 import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
 import { upcomingMovies } from "../MovieDetailPage/movies.js";
+import MovRow from "../Component/MovieRow.jsx"
 
 function Home(){
   const EEAAO = movies.find((m) => m.id === 2);
@@ -16,44 +17,18 @@ function Home(){
 
       <main class="container">
         <section className="welcome-container">
-          <Link to={ `/movie/${EEAAO.id}`}>
+          <Link to={ `/movie/${EEAAO.id}/${EEAAO.title}`}>
           <section className="promoted-container">
             <img src={EEAAO.poster} className="PromotedPoster"/>
             <video src={EEAAO.trailer} muted autoPlay loop className="PromotedTrailer"></video>
           </section>
           </Link>
         </section>
-        <section class="hero">
-          <h2>Discover and rate movies</h2>
-        </section>
+        
+      <MovRow rowslogan="Discover more!" link_addon="" movD={movies}/>
 
-      <section class="movies-row">
-         {movies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}/${movie.title}`}>
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-                <p class="stars">★ ★ ★ ★ ☆</p>
-               <h3 className="moviecard-title">{movie.title}</h3>
-            </Link>
-        </div>
-      ))}
-      </section>
+      <MovRow rowslogan="Coming soon!" link_addon="coming-soon/" movD={upcomingMovies}/>
 
-       <section class="hero">
-          <h2>Coming soon!</h2>
-        </section>
-
-      <section class="movies-row">
-         {upcomingMovies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/coming-soon/${movie.id}/${movie.title}`} >
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px", borderRadius:"16px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta">{movie.DOR}</p>
-            </Link>
-        </div>
-      ))}
-      </section>
   </main>
 
 
@@ -63,4 +38,6 @@ function Home(){
 }
 
 export default Home;
+
+
 

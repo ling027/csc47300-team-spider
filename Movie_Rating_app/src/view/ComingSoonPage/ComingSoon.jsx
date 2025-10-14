@@ -3,9 +3,7 @@ import { upcomingMovies } from "../MovieDetailPage/movies.js";
 import { Link } from "react-router-dom";
 import NavBar from "../Component/Navbar.jsx"
 
-
 function StarRow({ value = 5 }) {
-  // simple static 5-star row (fill based on value if you like)
   return (
     <div className="stars" aria-label={`${value} out of 5 stars`}>
       {"★★★★★".slice(0, value)}{"☆☆☆☆☆".slice(0, 5 - value)}

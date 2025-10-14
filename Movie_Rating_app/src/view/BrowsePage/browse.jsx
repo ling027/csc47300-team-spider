@@ -2,6 +2,7 @@ import "../main.css"
 import NavBar from "../Component/Navbar.jsx"
 import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
+import MovRow from "../Component/MovieRow.jsx"
 
 function Browse(){
   return(
@@ -42,19 +43,8 @@ function Browse(){
         <button class="btn" type="button" aria-disabled="true" title="Non-functional">Search</button>
       </form>
 
-      <section class="movies-row">
-        
-          {movies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}/${movie.title}`}>
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-              <p class="stars">★ ★ ★ ★ ☆</p>
-               <h3 className="moviecard-title">{movie.title}</h3>
-            </Link>
-        </div>
-      ))}
+      <MovRow rowslogan="" genre="" movD={movies}/>
       
-      </section>
   </main>
 </div>
   );
