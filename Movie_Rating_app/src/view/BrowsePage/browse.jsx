@@ -43,7 +43,7 @@ function Browse(){
         <button class="btn" type="button" aria-disabled="true" title="Non-functional">Search</button>
       </form>
 
-      <MovRow rowslogan="" genre="" movD={movies}/>
+      <MovRow rowslogan="" link_addon="" movD={movies}/>
       
   </main>
 </div>
