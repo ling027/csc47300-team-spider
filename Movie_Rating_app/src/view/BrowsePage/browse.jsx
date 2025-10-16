@@ -1,72 +1,70 @@
-import "../main.css"
-import NavBar from "../Component/Navbar.jsx"
-import {Link} from 'react-router-dom';
-import {movies} from "../MovieDetailPage/movies.js";
-import { useLang } from "../../i18n/LanguageContext.jsx"; 
+// src/view/BrowsePage/browse.jsx
+
+import "./main.css";
+import NavBar from "../Component/Navbar.jsx";
+import { Link } from "react-router-dom"; // (can be removed if unused)
+import { movies } from "../../MovieDetailPage/movies.js";
+
+// i18n + helpers (from HEAD)
+import { useLang } from "../../i18n/LanguageContext.jsx";
 import { useFormatters } from "../../utils/formatHelpers.js";
 
+// MovRow (incoming change)
+import MovRow from "../Component/MovieRow.jsx";
 
-function Browse(){
+function Browse() {
   const { t } = useLang();
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
 
-  return(
+  return (
     <div className="body">
-      <header class="site-header">
-        <NavBar/>
+      <header className="site-header">
+        <NavBar />
       </header>
 
-      <main class="container">
-        <section class="browse-header">
+      <main className="container">
+        <section className="browse-header">
           <h2>{t("browseHeader")}</h2>
-      </section>
+        </section>
 
- 
-      <form class="toolbar" role="search" aria-label="Movie search (visual only)">
-        <label class="visually-hidden" for="q">Search</label>
-        <input id="q" class="input" type="search" placeholder={t("searchPlaceholder")} />
+        {/* Toolbar / filters (non-functional, as before) */}
+        <form className="toolbar" role="search" aria-label="Movie search (visual only)">
+          <label className="visually-hidden" htmlFor="q">Search</label>
+          <input id="q" className="input" type="search" placeholder={t("searchPlaceholder")} />
 
-        <label class="visually-hidden" for="genre">Genre</label>
-        <select id="genre" class="select">
-          <option selected>{t("allGenres")}</option>
-          <option>{t("actionGenre")}</option>
-          <option>{t("adventure")}</option>
-          <option>{t("drama")}</option>
-          <option>{t("scifi")}</option>
-         <option>{t("animation")}</option>
-         <option>{t("comedy")}</option>
-         <option>{t("thriller")}</option>
+          <label className="visually-hidden" htmlFor="genre">Genre</label>
+          <select id="genre" className="select">
+            <option selected>{t("allGenres")}</option>
+            <option>{t("actionGenre")}</option>
+            <option>{t("adventure")}</option>
+            <option>{t("drama")}</option>
+            <option>{t("scifi")}</option>
+            <option>{t("animation")}</option>
+            <option>{t("comedy")}</option>
+            <option>{t("thriller")}</option>
+          </select>
 
-        </select>
+          <label className="visually-hidden" htmlFor="rating">Rating</label>
+          <select id="rating" className="select">
+            <option selected>{t("anyRating")}</option>
+            <option>5★</option>
+            <option>4★+</option>
+            <option>3★+</option>
+            <option>2★+</option>
+            <option>1★+</option>
+          </select>
 
-        <label class="visually-hidden" for="rating">Rating</label>
-        <select id="rating" class="select">
-          <option selected>{t("anyRating")}</option>
-          <option>★ 5</option>
-          <option>★ 4+</option>
-          <option>★ 3+</option>
-          <option>★ 2+</option>
-        </select>
+          <button className="btn" type="button" aria-disabled="true" title="Non-functional">
+            {t("search")}
+          </button>
+        </form>
 
-        <button class="btn" type="button" aria-disabled="true" title="Non-functional">{t("search")}</button>
-      </form>
-
-      <section class="movies-row">
-        
-          {movies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}`}>
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta">2010</p>
-              <p class="stars">★ ★ ★ ★ ☆</p>
-            </Link>
-        </div>
-      ))}
-      
-      </section>
-  </main>
-</div>
+        {/* Use MovRow instead of the old inline .map(...) */}
+        <section className="movies-row">
+          <MovRow rowslogan="" link_addon="" movD={movies} />
+        </section>
+      </main>
+    </div>
   );
 }
 
