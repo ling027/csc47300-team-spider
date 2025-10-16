@@ -1,9 +1,13 @@
 import "./MovieDetailCard.css"
 import "../../main.css"
 import NavBar from "../Navbar.jsx"
+import { useLang } from "../../../i18n/LanguageContext.jsx";
 
 
-const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,casts,length })=>{
+const MovieDetail = ({title, poster, trailer, genre, DOR, synopsis, rating,casts,length, studio, director, screenwriter, })=>{
+    const { lang,setLang, t } = useLang();
+
+
     return(
         <>
         <header className="site-header">
@@ -21,9 +25,15 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
                         <source src={trailer}/>
                     </video>
                 </section>
-                <p className="Genre-Container">Genre: {genre}</p>
-                <p className="description">{description}</p>
-                <p className="Team-infor">{casts}</p>
+                <p className="Genre-Container">
+                    <strong>{t("genreLabel")}</strong> {genre}</p>
+                <p className="description">{synopsis}</p>
+                <div className="Team-infor">
+                    <p><strong>{t("cast")}</strong> {casts}</p>
+                    <p><strong>{t("studio")}</strong> {studio}</p>
+                    <p><strong>{t("director")}</strong> {director}</p>
+                    <p><strong>{t("screenwriter")}</strong> {screenwriter}</p>
+                </div>
             </div> 
         </div>
         </>
@@ -31,3 +41,4 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, description, rating,ca
 }
 
 export default MovieDetail;
+

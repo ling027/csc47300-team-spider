@@ -1,8 +1,11 @@
 import "../main.css"
 import "./Signup.css"
 import NavBar from "../Component/Navbar.jsx"
+import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
 function SignUp(){
+    const { t } = useLang();
+
     return(
         <div className="body">
              
@@ -12,34 +15,34 @@ function SignUp(){
 
         <main class="signup-page">
             <div class="signup-container" >
-                <h1>Sign Up</h1>
+                <h1>{t("signUp")}</h1>
                 <form action="/signup" method="post">
-                <label for ="fullname">Your Name</label>
+                <label for ="fullname">{t("fullname")}</label>
                 <br/>
-                <input type="text" class="signup-input" name="fullname" placeholder="Your First and Last Name" required />
+                <input type="text" class="signup-input" name="fullname" placeholder={t("yourFirstAndLastName")} required />
                 <br />
 
-                <label for ="Email">Your Email</label>
+                <label for ="Email">{t("email")}</label>
                 <br/>
-                <input type="text" class="signup-input" name="Email" placeholder="Your Email" />
+                <input type="text" class="signup-input" name="Email" placeholder={t("email")} />
                 <br />
 
-                <label for="username">Username:</label>
+                <label for="username">{t("username")}</label>
                  <br />
-                <input type="text" class="signup-input" name="username" placeholder="Your Uername" required />
+                <input type="text" class="signup-input" name="username" placeholder={t("yourUsername")} required />
                 <br />
 
-                <label for="password">Password:</label>
+                <label for="password">{t("password")}</label>
                  <br />
-                <input type="password" class="signup-input" name="password" placeholder="Your Password" required />
+                <input type="password" class="signup-input" name="password" placeholder={t("yourPassword")} required />
                 <br />
 
-                <label for="Re-enter_password">Re-Enter Password:</label>
+                <label for="Re-enter_password">{t("reenterPassword")}</label>
                  <br />
-                <input type="password" class="signup-input" name="Re-enter_password" placeholder="re-enter your password" required />
+                <input type="password" class="signup-input" name="Re-enter_password" placeholder={t("reenterYourPassword")} required />
                 <br />
                 
-                <button type="submit" class="login-button">Sign Up</button>
+                <button type="submit" class="login-button">{t("signUpButton")}</button>
             </form>
         </div>
         </main>

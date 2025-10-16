@@ -1,7 +1,10 @@
 import "../main.css"
 import NavBar from "../Component/Navbar.jsx"
+import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
 function WatchList(){
+  const { t } = useLang();
+
   return(
     <div className="body">
   <header class="site-header">
@@ -10,17 +13,17 @@ function WatchList(){
 
   <main class="container">
     <section class="watchlist-header">
-      <h2>Your Watchlist</h2>
+      <h2>{t("yourWatchlist")}</h2>
     </section>
 
     <section class="watchlist-table card">
       <table class="wl-table">
         <thead>
           <tr>
-            <th>Title</th>
-            <th>Year</th>
-            <th>Rating</th>
-            <th class="right">Action</th>
+            <th>{t("title")}</th>
+            <th>{t("year")}</th>
+            <th>{t("rating")}</th>
+            <th class="right">{t("action")}</th>
           </tr>
         </thead>
         <tbody>
@@ -28,25 +31,25 @@ function WatchList(){
             <td>Inception</td>
             <td>2010</td>
             <td>★ ★ ★ ★ ☆</td>
-            <td class="right"><button class="btn danger" type="button" aria-disabled="true">Remove</button></td>
+            <td class="right"><button class="btn danger" type="button" aria-disabled="true">{t("remove")}</button></td>
           </tr>
           <tr>
             <td>Interstellar</td>
             <td>2014</td>
             <td>★ ★ ★ ★ ★</td>
-            <td class="right"><button class="btn danger" type="button" aria-disabled="true">Remove</button></td>
+            <td class="right"><button class="btn danger" type="button" aria-disabled="true">{t("remove")}</button></td>
           </tr>
           <tr>
             <td>Dune</td>
             <td>2021</td>
             <td>★ ★ ★ ★ ☆</td>
-            <td class="right"><button class="btn danger" type="button" aria-disabled="true">Remove</button></td>
+            <td class="right"><button class="btn danger" type="button" aria-disabled="true">{t("remove")}</button></td>
           </tr>
           <tr>
             <td>Spider-Verse</td>
             <td>2018</td>
             <td>★ ★ ★ ★ ★</td>
-            <td class="right"><button class="btn danger" type="button" aria-disabled="true">Remove</button></td>
+            <td class="right"><button class="btn danger" type="button" aria-disabled="true">{t("remove")}</button></td>
           </tr>
         </tbody>
       </table>

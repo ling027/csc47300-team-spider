@@ -1,6 +1,12 @@
 import "../main.css"
 import {Link, useNavigate} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
+import { IoHomeOutline } from "react-icons/io5";
+import { IoSearchSharp } from "react-icons/io5";
+import { MdMovieFilter } from "react-icons/md";
+import { FaRegBookmark } from "react-icons/fa";
+import { IoLogInOutline } from "react-icons/io5";
+import { MdContactSupport } from "react-icons/md";
 
 
 function NavBar() {
@@ -8,12 +14,12 @@ function NavBar() {
     return (
         <nav className="navbar">
         <nav className="links">
-            <Link to="/" className="nav-link">{t("home")}</Link>
-            <Link to="/browse" className="nav-link">{t("browse")}</Link>
-            <Link to="/coming-soon" className="nav-link">{t("comingSoon")}</Link>
-            <Link to="/watchlist" className="nav-link">{t("watchlist")}</Link>
-            <Link to="/Login" className="nav-link">{t("login")}</Link>
-            <Link to="/contactus" className="nav-link">{t("contact")}</Link>
+            <Link to="/" className="nav-link"><IoHomeOutline />{ t("home")}</Link>
+            <Link to="/browse" className="nav-link"><IoSearchSharp/>{t("browse")}</Link>
+            <Link to="/coming-soon" className="nav-link"><MdMovieFilter/>{t("comingSoon")}</Link>
+            <Link to="/watchlist" className="nav-link"> <FaRegBookmark/>{t("watchlist")}</Link>
+            <Link to="/Login" className="nav-link"><IoLogInOutline/>{t("login")}</Link>
+            <Link to="/contactus" className="nav-link"><MdContactSupport/>{t("contact")}</Link>
         </nav>
 
             <div className="nav-right">
