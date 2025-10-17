@@ -4,7 +4,22 @@ import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import { useFormatters } from "../../utils/formatHelpers.js";
+import MovRow from "../Component/MovieRow.jsx"
+/*
+<section class="movies-row">
+        
+{movies.map((movie) => (
+  <div key={movie.id} className="card">
+  <Link to={`/movie/${movie.id}`}>
+     <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
+     <h3 className="moviecard-title">{movie.title}</h3>
+      <p class="meta">2010</p>
+    <p class="stars">★ ★ ★ ★ ☆</p>
+  </Link>
+</div>
+))}
 
+</section>*/
 
 function Browse(){
   const { t } = useLang();
@@ -51,20 +66,8 @@ function Browse(){
         <button class="btn" type="button" aria-disabled="true" title="Non-functional">{t("search")}</button>
       </form>
 
-      <section class="movies-row">
-        
-          {movies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}`}>
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta">2010</p>
-              <p class="stars">★ ★ ★ ★ ☆</p>
-            </Link>
-        </div>
-      ))}
-      
-      </section>
+      <MovRow rowslogan="" link_addon="" movD={movies}/>
+
   </main>
 </div>
   );

@@ -5,6 +5,7 @@ import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
 import { upcomingMovies } from "../MovieDetailPage/movies.js";
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
+import MovRow from "../Component/MovieRow.jsx"
 import { useFormatters } from "../../utils/formatHelpers.js";
 
 
@@ -19,53 +20,26 @@ function Home(){
       <header class="site-header">
         <NavBar/>
       </header>
-
+  
       <main class="container">
         <section className="welcome-container">
-          <Link to={ `/movie/${EEAAO.id}`}>
+          <Link to={ `/movie/${EEAAO.id}/${EEAAO.title}`}>
           <section className="promoted-container">
             <img src={EEAAO.poster} className="PromotedPoster"/>
             <video src={EEAAO.trailer} muted autoPlay loop className="PromotedTrailer"></video>
           </section>
           </Link>
         </section>
-        <section class="hero">
-          <h2>{t("discoverRate")}</h2>
-        </section>
-
-      <section class="movies-row">
-         {movies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/${movie.id}`}>
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p className="meta" >{formatDate(movie.releaseDate)}</p>
-              <p class="stars">★ ★ ★ ★ ☆</p>
-            </Link>
-        </div>
-      ))}
-      </section>
-
-       <section class="hero">
-          <h2>{t("comingSoonSection")}</h2>
-        </section>
-
-      <section class="movies-row">
-         {upcomingMovies.map((movie) => (
-            <div key={movie.id} className="card">
-            <Link to={`/movie/coming-soon/${movie.id}`} >
-               <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px", borderRadius:"16px"}}src={movie.poster}/></div>
-               <h3 className="moviecard-title">{movie.title}</h3>
-                <p class="meta">{movie.DOR}</p>
-            </Link>
-        </div>
-      ))}
-      </section>
+        
+      <MovRow rowslogan={t("discoverRate")} link_addon="" movD={movies}/>
+  
+      <MovRow rowslogan={t("comingSoonSection")} link_addon="coming-soon/" movD={upcomingMovies}/>
+  
   </main>
-
-
-</div>
-
+  
+  
+  </div>
+  
   );
 }
 

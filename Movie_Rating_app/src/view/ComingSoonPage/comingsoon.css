@@ -92,8 +92,10 @@
 
 .cs-actions {
   margin: auto 14px 16px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .cs-btn {
@@ -116,8 +118,18 @@
   align-items: center;
   padding: 10px 14px;
   border-radius: 12px;
+
+  flex: 1 1 180px;               
+  min-width: 0;                  
+  width: auto;                  
+  white-space: normal;          
+  line-height: 1.2;          
+  padding: 10px 12px;           
+  display: block;              
+  text-align: center;
 }
 .cs-btn-ghost[aria-disabled] {
   opacity: 0.6;
   pointer-events: none; 
 }
+

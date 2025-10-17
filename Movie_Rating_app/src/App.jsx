@@ -25,9 +25,9 @@ function App() {
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="/watchlist" element={<WatchList/>}/>
-        <Route path="/movie/:id" element={<MovieDetailPage/>}/>
+        <Route path="/movie/:id/:title" element={<MovieDetailPage/>}/>
         <Route path="/ContactUs" element={<ContactUs/>}/>
-        <Route path="/movie/coming-soon/:id" element={<UCMoiveDetailPage/>}/>
+        <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>
       </Routes>
     </Router>
     </LanguageProvider>
