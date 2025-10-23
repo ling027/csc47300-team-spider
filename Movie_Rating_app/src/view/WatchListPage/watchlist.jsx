@@ -1,4 +1,4 @@
-import "../main.css"
+import "./watchlist.css"
 import NavBar from "../Component/Navbar.jsx"
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
