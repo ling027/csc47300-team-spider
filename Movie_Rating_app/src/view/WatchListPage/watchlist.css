@@ -1,100 +1,302 @@
-.body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
-    color: #0f172a;
-    min-height: 120vh;
-  }
-  
-  .container {
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    justify-content: center;
-  }
-  
-  .site-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-    border-bottom: 1px solid #ddd;
-  
-    width: 100%;
-    height: 50px;
-  }
-  
-  .card {
-    background: #2b2b44;
-    border-radius: 16px;
-    width: 200px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  }
-  
-  .btn {
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    color: #0f172a;
-    border-radius: 6px;
-    cursor: default;
-  }
-  
-  .btn:hover {
-    background: #f1f5f9;
-  }
-  
-  /* This second .container rule was also in main.css. 
-    It overrides the first one, giving the container its specific width.
-  */
-  .container {
-    display: flex;
-    align-items: center;
-    max-width: none;
-    width: 80%;
-    padding: 16px;
-  }
-  
-  .watchlist-table {
-    width: 100%;
-    margin: 0 auto;
-    color: white;
-  }
-  
-  .wl-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .wl-table th,
-  .wl-table td {
-    border-top: 1px solid #e5e7eb;
-    padding: 12px 10px;
-    text-align: left;
-  }
-  
-  .wl-table thead th {
-    background: inherit;
-    text-align: left;
-  }
-  
-  .wl-table .right {
-    text-align: right;
-  }
-  
-  .btn.danger {
-    padding: 6px 10px;
-    border: 1px solid #fecaca;
-    background: #fee2e2;
-    color: #7f1d1d;
-    border-radius: 6px;
-    cursor: default;
-  }
-  .btn.danger:hover {
-    background: #fecaca;
-  }
-  
-  .watchlist-header {
-    color: white;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* CHANGED: Renamed 'body' to '.watchlist-body-wrapper'
+  to match the component's root div
+*/
+.watchlist-body-wrapper {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* ADDED: Style for your NavBar header */
+.main-nav-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  padding: 0 20px; /* Add some padding */
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px; /* Moved padding here from body */
+}
+
+header {
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 20px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #fff;
+}
+
+.main-content {
+  display: flex;
+  gap: 24px;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.sidebar-card {
+  background: #2b2b44;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.btn-add {
+  background: #4f46e5;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.btn-add:hover {
+  background: #4338ca;
+}
+
+.new-list-form {
+  margin-bottom: 16px;
+  display: none;
+}
+
+.new-list-form.active {
+  display: block;
+}
+
+.new-list-form input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: #1e1e2f;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.btn-create {
+  width: 100%;
+  padding: 8px;
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-create:hover {
+  background: #059669;
+}
+
+.list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #1e1e2f;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.list-item:hover {
+  background: #2d2d4a;
+}
+
+.list-item.active {
+  background: #4f46e5;
+}
+
+.list-item-info {
+  flex: 1;
+}
+
+.list-item-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.list-item-count {
+  font-size: 12px;
+  color: #9ca3af; /* CHANGED: Muted color */
+}
+
+.btn-delete {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #ef4444;
+  font-size: 18px;
+}
+
+.btn-delete:hover {
+  color: #dc2626;
+}
+
+/* Main Content */
+.content {
+  flex: 1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #2b2b44;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.stat-icon {
+  font-size: 20px;
+}
+
+.stat-label {
+  color: #9ca3af; /* CHANGED: Muted color */
+  font-size: 14px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stat-value.medium {
+  font-size: 24px;
+}
+
+.movies-card {
+  background: #2b2b44;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.movies-card h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  border-bottom: 2px solid #4b5563;
+}
+
+th {
+  text-align: left;
+  padding: 12px;
+  color: #9ca3af; /* CHANGED: Muted color */
+}
+
+th.right {
+  text-align: right;
+}
+
+tbody tr {
+  border-bottom: 1px solid #374151;
+}
+
+td {
+  padding: 12px;
+  color: #fff;
+}
+
+td.secondary {
+  color: #9ca3af; /* CHANGED: Muted color */
+}
+
+td.right {
+  text-align: right;
+}
+
+.btn-remove {
+  padding: 6px 12px;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #7f1d1d;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-remove:hover {
+  background: #fecaca;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af; /* CHANGED: Muted color */
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.stars {
+  color: #fbbf24;
+}
+
+.star-empty {
+  color: #6b7080;
+}
