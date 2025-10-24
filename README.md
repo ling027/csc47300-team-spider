@@ -1,5 +1,6 @@
 # Team-Spider
 
+
 \# 🧩 Movie Rating Website
 
 \#\# 📘 Project Description  
@@ -19,18 +20,18 @@ total movies, total runtime, average rating, and year range.
 
 \---
 
-\#\#\# ⚙️ Feature 2: Changing Language 
+\#\#\# ⚙️ Feature 2: Discussion page
 \*\*Description:\*\*    
-This feature lets users change the language of the site to their preference to better understand the content.
+Allows users to create threads and comment on movies, enabling community discussions and feedback.  
 
 \*\*Code Link:\*\*    
-\[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/i18n)
+\[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/view/DiscussionPage)
 
 \---
 
 \#\#\# 🖥️ Feature 3: Movie detail page  
 \*\*Description:\*\*    
-This feature allows the admin to create detail page for movies dynamically and more efficiently.
+Displays detailed movie or show information (title, poster, runtime, rating, etc.) This information will later be pulled from an api
 
 \*\*Code Link:\*\*    
 \[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/view/MovieDetailPage)
