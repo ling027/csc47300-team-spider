@@ -594,6 +594,25 @@ td.right {
   font-size: 14px;
 }
 
+.movie-poster-cell {
+  width: 80px;
+  text-align: center;
+  padding: 8px;
+}
+
+.movie-poster {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.movie-poster:hover {
+  transform: scale(1.05);
+}
+
 @media (max-width: 768px) {
   .main-nav-header .navbar {
     flex-direction: column;

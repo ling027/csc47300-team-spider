@@ -13,14 +13,16 @@ const initialListsData = [
         title: movies[0].title, 
         year: movies[0].releaseDate ? new Date(movies[0].releaseDate).getFullYear() : 2010, 
         rating: 5, 
-        runtime: parseInt(movies[0].length) || 145 
+        runtime: parseInt(movies[0].length) || 145,
+        poster: movies[0].poster
       },
       { 
         id: upcomingMovies[0].id, 
         title: upcomingMovies[0].title, 
         year: upcomingMovies[0].releaseDate ? new Date(upcomingMovies[0].releaseDate).getFullYear() : 2026, 
         rating: 5, 
-        runtime: parseInt(upcomingMovies[0].length) || 165 
+        runtime: parseInt(upcomingMovies[0].length) || 165,
+        poster: upcomingMovies[0].poster
       }
     ]
   },
@@ -33,14 +35,16 @@ const initialListsData = [
         title: movies[0].title, 
         year: movies[0].releaseDate ? new Date(movies[0].releaseDate).getFullYear() : 2010, 
         rating: 5, 
-        runtime: parseInt(movies[0].length) || 145 
+        runtime: parseInt(movies[0].length) || 145,
+        poster: movies[0].poster
       },
       { 
         id: movies[2].id, 
         title: movies[2].title, 
         year: movies[2].DOR ? parseInt(movies[2].DOR) : 2022, 
         rating: 3, 
-        runtime: parseInt(movies[2].length) || 139 
+        runtime: parseInt(movies[2].length) || 139,
+        poster: movies[2].poster
       }
     ]
   },
@@ -53,14 +57,16 @@ const initialListsData = [
         title: upcomingMovies[1].title, 
         year: upcomingMovies[1].releaseDate ? new Date(upcomingMovies[1].releaseDate).getFullYear() : 2026, 
         rating: 4, 
-        runtime: parseInt(upcomingMovies[1].length) || 130 
+        runtime: parseInt(upcomingMovies[1].length) || 130,
+        poster: upcomingMovies[1].poster
       },
       { 
         id: upcomingMovies[2].id, 
         title: upcomingMovies[2].title, 
         year: upcomingMovies[2].releaseDate ? new Date(upcomingMovies[2].releaseDate).getFullYear() : 2026, 
         rating: 4, 
-        runtime: parseInt(upcomingMovies[2].length) || 170 
+        runtime: parseInt(upcomingMovies[2].length) || 170,
+        poster: upcomingMovies[2].poster
       }
     ]
   }
@@ -190,7 +196,8 @@ function WatchList() {
       year: 2024,
       runtime: 120,
       rating: rating,
-      review: review.trim()
+      review: review.trim(),
+      poster: "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image"
     };
 
     const updatedLists = lists.map(list => {
@@ -373,6 +380,7 @@ function WatchList() {
                     <table>
                       <thead>
                         <tr>
+                          <th>Poster</th>
                           <th>Title</th>
                           <th>Year</th>
                           <th>Runtime</th>
@@ -385,6 +393,16 @@ function WatchList() {
                         {selectedList.movies.map(movie => (
                           <React.Fragment key={movie.id}>
                             <tr>
+                              <td className="movie-poster-cell">
+                                <img 
+                                  src={movie.poster} 
+                                  alt={`${movie.title} poster`}
+                                  className="movie-poster"
+                                  onError={(e) => {
+                                    e.target.src = "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image";
+                                  }}
+                                />
+                              </td>
                               <td>{movie.title}</td>
                               <td className="secondary">{movie.year}</td>
                               <td className="secondary">{movie.runtime} min</td>
@@ -428,7 +446,7 @@ function WatchList() {
                             </tr>
                             {movie.review && expandedReviews.has(movie.id) && (
                               <tr className="review-row">
-                                <td colSpan="6" className="review-content-cell">
+                                <td colSpan="7" className="review-content-cell">
                                   <div className="review-content">
                                     <p>{movie.review}</p>
                                   </div>
