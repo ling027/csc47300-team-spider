@@ -107,6 +107,7 @@ function WatchList() {
     rating: 0,
     review: ''
   });
+  const [expandedReviews, setExpandedReviews] = useState(new Set());
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
@@ -161,6 +162,18 @@ function WatchList() {
       ...prev,
       rating: rating
     }));
+  };
+
+  const toggleReviewExpansion = (movieId) => {
+    setExpandedReviews(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(movieId)) {
+        newSet.delete(movieId);
+      } else {
+        newSet.add(movieId);
+      }
+      return newSet;
+    });
   };
 
   const addMovieToList = () => {
@@ -370,40 +383,59 @@ function WatchList() {
                       </thead>
                       <tbody>
                         {selectedList.movies.map(movie => (
-                          <tr key={movie.id}>
-                            <td>{movie.title}</td>
-                            <td className="secondary">{movie.year}</td>
-                            <td className="secondary">{movie.runtime} min</td>
-                            <td>{renderStars(movie.rating)}</td>
-                            <td className="review-cell">
-                              {movie.review ? (
-                                <div className="review-preview" title={movie.review}>
-                                  {movie.review.length > 50 ? `${movie.review.substring(0, 50)}...` : movie.review}
-                                </div>
-                              ) : (
-                                <span className="no-review">No review</span>
-                              )}
-                            </td>
-                            <td className="right">
-                              <button 
-                                className="btn-remove" 
-                                onClick={() => {
-                                  const updatedLists = lists.map(list => {
-                                    if (list.id === selectedListId) {
-                                      return {
-                                        ...list,
-                                        movies: list.movies.filter(m => m.id !== movie.id)
-                                      };
-                                    }
-                                    return list;
-                                  });
-                                  setLists(updatedLists);
-                                }}
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
+                          <React.Fragment key={movie.id}>
+                            <tr>
+                              <td>{movie.title}</td>
+                              <td className="secondary">{movie.year}</td>
+                              <td className="secondary">{movie.runtime} min</td>
+                              <td>{renderStars(movie.rating)}</td>
+                              <td className="review-cell">
+                                {movie.review ? (
+                                  <div className="review-dropdown">
+                                    <button 
+                                      className="review-toggle"
+                                      onClick={() => toggleReviewExpansion(movie.id)}
+                                    >
+                                      <span className="has-review">Yes</span>
+                                      <span className={`dropdown-arrow ${expandedReviews.has(movie.id) ? 'expanded' : ''}`}>
+                                        ▼
+                                      </span>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="no-review">No</span>
+                                )}
+                              </td>
+                              <td className="right">
+                                <button 
+                                  className="btn-remove" 
+                                  onClick={() => {
+                                    const updatedLists = lists.map(list => {
+                                      if (list.id === selectedListId) {
+                                        return {
+                                          ...list,
+                                          movies: list.movies.filter(m => m.id !== movie.id)
+                                        };
+                                      }
+                                      return list;
+                                    });
+                                    setLists(updatedLists);
+                                  }}
+                                >
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                            {movie.review && expandedReviews.has(movie.id) && (
+                              <tr className="review-row">
+                                <td colSpan="6" className="review-content-cell">
+                                  <div className="review-content">
+                                    <p>{movie.review}</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </table>
