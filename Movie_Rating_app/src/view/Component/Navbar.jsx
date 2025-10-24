@@ -18,6 +18,7 @@ function NavBar() {
             <Link to="/browse" className="nav-link"><IoSearchSharp/>{t("browse")}</Link>
             <Link to="/coming-soon" className="nav-link"><MdMovieFilter/>{t("comingSoon")}</Link>
             <Link to="/watchlist" className="nav-link"> <FaRegBookmark/>{t("watchlist")}</Link>
+            <Link to="/discussions" className="nav-link">💬 Discussions</Link>
             <Link to="/Login" className="nav-link"><IoLogInOutline/>{t("login")}</Link>
             <Link to="/contactus" className="nav-link"><MdContactSupport/>{t("contact")}</Link>
         </nav>

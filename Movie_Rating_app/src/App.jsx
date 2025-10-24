@@ -7,6 +7,7 @@ import Home from "./view/HomePage/home.jsx"
 import Login from "./view/LoginPage/Login.jsx"
 import SignUp from "./view/SignUpPage/SignUp.jsx"
 import WatchList from "./view/WatchListPage/watchlist.jsx"
+import DiscussionPage from "./view/DiscussionPage/discussion.jsx"
 import ComingSoon from "./view/ComingSoonPage/ComingSoon.jsx"
 import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={<Login/>}/>
         <Route path="/signup" element={<SignUp/>}/>
         <Route path="/watchlist" element={<WatchList/>}/>
+        <Route path="/discussions" element={<DiscussionPage/>}/>
         <Route path="/movie/:id/:title" element={<MovieDetailPage/>}/>
         <Route path="/ContactUs" element={<ContactUs/>}/>
         <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>
