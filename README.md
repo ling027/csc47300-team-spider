@@ -15,7 +15,7 @@ This feature lets users organize films into various lists. The interface display
 total movies, total runtime, average rating, and year range. 
 
 \*\*Code Link:\*\*    
-\[View Implementation\](Movie_Rating_app\src\view\WatchListPage)
+\[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/view/WatchListPage)
 
 \---
 
