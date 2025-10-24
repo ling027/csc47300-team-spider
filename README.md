@@ -19,23 +19,21 @@ total movies, total runtime, average rating, and year range.
 
 \---
 
-\#\#\# ⚙️ Feature 2: \*Feature Name\*  
+\#\#\# ⚙️ Feature 2: Changing Language 
 \*\*Description:\*\*    
-Explain this feature’s purpose and functionality.    
-You can mention dependencies, special algorithms, or modules it relies on.
+This feature lets users change the language of the site to their preference to better understand the content.
 
 \*\*Code Link:\*\*    
-\[View Implementation\](./path/to/feature2/code)
+\[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/i18n)
 
 \---
 
-\#\#\# 🖥️ Feature 3: \*Feature Name\*  
+\#\#\# 🖥️ Feature 3: Movie detail page  
 \*\*Description:\*\*    
-Summarize this feature’s behavior, its impact, or what problem it solves.    
-Include any notable edge cases or improvements.
+This feature allows the admin to create detail page for movies dynamically and more efficiently.
 
 \*\*Code Link:\*\*    
-\[View Implementation\](./path/to/feature3/code)
+\[View Implementation\](https://github.com/ling027/csc47300-team-spider/tree/main/Movie_Rating_app/src/view/MovieDetailPage)
 
 \---
 
