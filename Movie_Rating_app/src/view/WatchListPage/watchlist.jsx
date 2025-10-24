@@ -14,7 +14,8 @@ const initialListsData = [
         year: movies[0].releaseDate ? new Date(movies[0].releaseDate).getFullYear() : 2010, 
         rating: 5, 
         runtime: parseInt(movies[0].length) || 145,
-        poster: movies[0].poster
+        poster: movies[0].poster,
+        review: "Inception is, without a doubt, one of my favourite movies of all time. Directed by Christopher Nolan, this film delivers a unique blend of mind-bending storytelling, impeccable performances, and stunning visuals that have left a lasting impression on me. From the moment I first watched it, I was captivated by its intricate plot and the way it challenges the audience to think deeply about the nature of reality and dreams."
       },
       { 
         id: upcomingMovies[0].id, 
