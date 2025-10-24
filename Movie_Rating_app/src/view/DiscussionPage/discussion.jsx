@@ -3,6 +3,7 @@ import './discussion.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 
+
 const initialThreads = [
   {
     id: 1,

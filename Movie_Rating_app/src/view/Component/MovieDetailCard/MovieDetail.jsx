@@ -4,6 +4,7 @@ import NavBar from "../Navbar.jsx"
 import { useLang } from "../../../i18n/LanguageContext.jsx";
 
 
+
 const MovieDetail = ({title, poster, trailer, genre, DOR, synopsis, rating,casts,length, studio, director, screenwriter, })=>{
     const { lang,setLang, t } = useLang();
 
