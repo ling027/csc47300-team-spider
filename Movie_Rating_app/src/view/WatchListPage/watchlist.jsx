@@ -3,7 +3,6 @@ import './watchlist.css';
 import NavBar from '../Component/Navbar.jsx';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
 
-// --- Data and Helper Functions (Unchanged) ---
 const initialListsData = [
   {
     id: 1,
@@ -97,15 +96,17 @@ const renderStars = (rating) => {
   }
   return stars;
 };
-// --- End of Unchanged Code ---
-
-
-// --- React Component ---
 function WatchList() {
   const [lists, setLists] = useState(initialListsData);
   const [selectedListId, setSelectedListId] = useState(1);
   const [showNewListForm, setShowNewListForm] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [showAddMovieForm, setShowAddMovieForm] = useState(false);
+  const [newMovie, setNewMovie] = useState({
+    title: '',
+    rating: 0,
+    review: ''
+  });
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
@@ -137,6 +138,67 @@ function WatchList() {
     }
   };
 
+  const toggleAddMovieForm = () => {
+    setShowAddMovieForm(!showAddMovieForm);
+    if (!showAddMovieForm) {
+      setNewMovie({
+        title: '',
+        rating: 0,
+        review: ''
+      });
+    }
+  };
+
+  const handleMovieInputChange = (field, value) => {
+    setNewMovie(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleStarClick = (rating) => {
+    setNewMovie(prev => ({
+      ...prev,
+      rating: rating
+    }));
+  };
+
+  const addMovieToList = () => {
+    const { title, rating, review } = newMovie;
+    
+    if (!title.trim() || rating === 0) {
+      alert('Please fill in all required fields (title and rating)');
+      return;
+    }
+
+    const movieToAdd = {
+      id: Date.now(),
+      title: title.trim(),
+      year: 2024,
+      runtime: 120,
+      rating: rating,
+      review: review.trim()
+    };
+
+    const updatedLists = lists.map(list => {
+      if (list.id === selectedListId) {
+        return {
+          ...list,
+          movies: [...list.movies, movieToAdd]
+        };
+      }
+      return list;
+    });
+
+    setLists(updatedLists);
+    setShowAddMovieForm(false);
+    setNewMovie({
+      title: '',
+      rating: 0,
+      review: ''
+    });
+  };
+
   return (
     <div className="watchlist-body-wrapper"> 
       <header className="main-nav-header">
@@ -149,7 +211,6 @@ function WatchList() {
         </header>
 
         <div className="main-content">
-          {/* Sidebar */}
           <aside className="sidebar">
             <div className="sidebar-card">
               <div className="sidebar-header">
@@ -170,7 +231,7 @@ function WatchList() {
               <div className="list-items">
                 {lists.map(list => (
                   <div 
-                    key={list.id} // This key is correct
+                    key={list.id}
                     className={`list-item ${list.id === selectedListId ? 'active' : ''}`} 
                     onClick={() => setSelectedListId(list.id)}
                   >
@@ -187,14 +248,9 @@ function WatchList() {
             </div>
           </aside>
 
-          {/* HERE IS THE FIX: 
-            We add a 'key' prop to the <main> element.
-          */}
           {selectedList ? (
             <main key={selectedList.id} className="content"> 
-              {/* Stats Grid */}
               <div className="stats-grid">
-                {/* ... (stat cards) ... */}
                 <div className="stat-card">
                   <div className="stat-header">
                     <span className="stat-icon" style={{ color: '#4f46e5' }}>🎬</span>
@@ -228,9 +284,72 @@ function WatchList() {
                 </div>
               </div>
 
-              {/* Movies Table */}
               <div className="movies-card">
-                <h2>{selectedList.name}</h2>
+                <div className="movies-card-header">
+                  <h2>{selectedList.name}</h2>
+                  <button className="btn-add-movie" onClick={toggleAddMovieForm}>
+                    + Add Movie
+                  </button>
+                </div>
+
+                {showAddMovieForm && (
+                  <div className="add-movie-form">
+                    <h3>Add New Movie</h3>
+                    <div className="form-group">
+                      <label>Movie Title *</label>
+                      <input
+                        type="text"
+                        value={newMovie.title}
+                        onChange={(e) => handleMovieInputChange('title', e.target.value)}
+                        placeholder="Enter movie title"
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label>Rating *</label>
+                      <div className="star-rating">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            className={`star ${star <= newMovie.rating ? 'filled' : ''}`}
+                            onClick={() => handleStarClick(star)}
+                            onMouseEnter={() => {
+                            }}
+                          >
+                            ★
+                          </span>
+                        ))}
+                        <span className="rating-text">
+                          {newMovie.rating > 0 ? `${newMovie.rating} star${newMovie.rating > 1 ? 's' : ''}` : 'Click to rate'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Review (optional)</label>
+                      <textarea
+                        value={newMovie.review}
+                        onChange={(e) => handleMovieInputChange('review', e.target.value)}
+                        placeholder="Write your review here..."
+                        rows="3"
+                        maxLength="500"
+                      />
+                      <div className="char-count">
+                        {newMovie.review.length}/500 characters
+                      </div>
+                    </div>
+
+                    <div className="form-actions">
+                      <button className="btn-cancel" onClick={toggleAddMovieForm}>
+                        Cancel
+                      </button>
+                      <button className="btn-save" onClick={addMovieToList}>
+                        Add Movie
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   {selectedList.movies.length === 0 ? (
                     <div className="empty-state">
@@ -245,18 +364,44 @@ function WatchList() {
                           <th>Year</th>
                           <th>Runtime</th>
                           <th>Rating</th>
+                          <th>Review</th>
                           <th className="right">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {selectedList.movies.map(movie => (
-                          <tr key={movie.id}> {/* This key is also correct */}
+                          <tr key={movie.id}>
                             <td>{movie.title}</td>
                             <td className="secondary">{movie.year}</td>
                             <td className="secondary">{movie.runtime} min</td>
                             <td>{renderStars(movie.rating)}</td>
+                            <td className="review-cell">
+                              {movie.review ? (
+                                <div className="review-preview" title={movie.review}>
+                                  {movie.review.length > 50 ? `${movie.review.substring(0, 50)}...` : movie.review}
+                                </div>
+                              ) : (
+                                <span className="no-review">No review</span>
+                              )}
+                            </td>
                             <td className="right">
-                              <button className="btn-remove">Remove</button>
+                              <button 
+                                className="btn-remove" 
+                                onClick={() => {
+                                  const updatedLists = lists.map(list => {
+                                    if (list.id === selectedListId) {
+                                      return {
+                                        ...list,
+                                        movies: list.movies.filter(m => m.id !== movie.id)
+                                      };
+                                    }
+                                    return list;
+                                  });
+                                  setLists(updatedLists);
+                                }}
+                              >
+                                Remove
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -267,7 +412,7 @@ function WatchList() {
               </div>
             </main>
           ) : (
-            <main key="empty-state" className="content"> {/* Added key here too */}
+            <main key="empty-state" className="content">
               <div className="movies-card">
                 <div className="empty-state">
                   <div className="empty-icon">🎬</div>
