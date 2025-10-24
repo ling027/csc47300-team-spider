@@ -372,10 +372,27 @@ function WatchList() {
 
                 <div>
                   {selectedList.movies.length === 0 ? (
-                    <div className="empty-state">
-                      <div className="empty-icon">🎬</div>
-                      <p>No movies in this list yet</p>
-                    </div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Poster</th>
+                          <th>Title</th>
+                          <th>Year</th>
+                          <th>Runtime</th>
+                          <th>Rating</th>
+                          <th>Review</th>
+                          <th className="right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colSpan="7" className="empty-state">
+                            <div className="empty-icon">🎬</div>
+                            <p>No movies in this list yet</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   ) : (
                     <table>
                       <thead>
@@ -383,6 +400,7 @@ function WatchList() {
                           <th>Poster</th>
                           <th>Title</th>
                           <th>Year</th>
+                          <th>Runtime</th>
                           <th>Runtime</th>
                           <th>Rating</th>
                           <th>Review</th>
