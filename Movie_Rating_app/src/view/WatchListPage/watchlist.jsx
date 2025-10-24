@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import './watchlist.css'; 
+import './watchlist.css';
+import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
 
@@ -209,7 +210,7 @@ function WatchList() {
 
   return (
     <div className="watchlist-body-wrapper"> 
-      <header className="main-nav-header">
+      <header className="site-header">
         <NavBar/>
       </header>
       

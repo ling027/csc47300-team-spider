@@ -11,64 +11,6 @@
   min-height: 100vh;
 }
 
-.main-nav-header {
-  background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  width: 100%;
-  padding: 0 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.main-nav-header .navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  max-width: 1200px;
-  width: 100%;
-}
-
-.main-nav-header .links {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.main-nav-header .nav-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.main-nav-header .nav-link {
-  margin-right: 16px;
-  text-decoration: none;
-  color: #fff;
-  font-weight: 500;
-}
-
-.main-nav-header .nav-link.active { 
-  color: mediumaquamarine; 
-}
-
-.main-nav-header .lang-label { 
-  color: #fff; 
-}
-
-.main-nav-header .lang-select {
-  background: #2b2b44;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.main-nav-header .lang-select:focus { 
-  outline: none; 
-  box-shadow: 0 0 0 2px rgba(102,255,204,0.4); 
-}
 
 .container {
   max-width: 1400px;
@@ -631,17 +573,6 @@ td.right {
 }
 
 @media (max-width: 768px) {
-  .main-nav-header .navbar {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px 0;
-  }
-  
-  .main-nav-header .links {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 16px;
-  }
   
   .movies-card-header {
     flex-direction: column;
