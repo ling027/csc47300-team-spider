@@ -9,9 +9,9 @@ import SignUp from "./view/SignUpPage/SignUp.jsx"
 import WatchList from "./view/WatchListPage/watchlist.jsx"
 import DiscussionPage from "./view/DiscussionPage/discussion.jsx"
 import ComingSoon from "./view/ComingSoonPage/ComingSoon.jsx"
-import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
+import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
-import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
+import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 
 function App() {
   const [count, setCount] = useState(0)
