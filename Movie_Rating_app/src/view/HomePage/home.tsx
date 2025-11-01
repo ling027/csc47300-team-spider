@@ -95,20 +95,6 @@ function Home(){
     fetchMovies();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="body">
-        <header className="site-header">
-          <NavBar/>
-        </header>
-        <main className="container">
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
-            Loading...
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return(
     <div className="body">

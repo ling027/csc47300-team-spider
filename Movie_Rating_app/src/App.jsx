@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import './App.css'
-import Browse from "./view/BrowsePage/browse.jsx"
+import Browse from "./view/BrowsePage/browse.tsx"
 import Home from "./view/HomePage/home.jsx"
 import Login from "./view/LoginPage/Login.jsx"
 import SignUp from "./view/SignUpPage/SignUp.jsx"
