@@ -14,6 +14,7 @@ interface MovieData {
   title: string;
   poster: string;
   rating: string;
+  ratingValue: number; // Store numeric rating for star calculation
   releaseDate: string;
   trailer?: string;
 }
@@ -26,6 +27,7 @@ function transformMovie(movie: Movie): MovieData {
       ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` 
       : '',
     rating: movie.vote_average ? `${movie.vote_average.toFixed(1)}/10` : 'N/A',
+    ratingValue: movie.vote_average || 0, // Store numeric rating for star calculation
     releaseDate: movie.release_date || '',
   };
 }
