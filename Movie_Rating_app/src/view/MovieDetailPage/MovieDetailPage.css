@@ -1,13 +1,18 @@
 .Movie-datail-container{
     display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   padding: 20px;
   background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
   color: #fff;
   border-radius: 15px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .comment-container {

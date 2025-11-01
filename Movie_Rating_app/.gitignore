@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files
+.env
+.env.*       # ignore .env.development, .env.production, etc.
+!.env.example # allow committed example file
