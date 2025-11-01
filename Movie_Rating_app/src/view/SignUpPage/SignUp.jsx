@@ -1,6 +1,7 @@
 import "../main.css"
 import "./Signup.css"
 import NavBar from "../Component/Navbar.jsx"
+import {Link} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
 function SignUp(){
@@ -44,6 +45,8 @@ function SignUp(){
                 
                 <button type="submit" class="login-button">{t("signUpButton")}</button>
             </form>
+
+             <Link to="/Login" class="signup-link">Already have an account? Login</Link>
         </div>
         </main>
     </div>

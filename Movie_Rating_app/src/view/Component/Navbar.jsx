@@ -21,6 +21,7 @@ function NavBar() {
             <Link to="/discussions" className="nav-link">💬 Discussions</Link>
             <Link to="/Login" className="nav-link"><IoLogInOutline/>{t("login")}</Link>
             <Link to="/contactus" className="nav-link"><MdContactSupport/>{t("contact")}</Link>
+            <Link to="/profile" className="nav-link"><MdContactSupport/>Profile</Link>
         </nav>
 
             <div className="nav-right">

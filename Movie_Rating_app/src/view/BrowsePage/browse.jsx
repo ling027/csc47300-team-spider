@@ -1,29 +1,24 @@
 import "../main.css"
+import "./browse.css"
+import {useState} from 'react'
 import NavBar from "../Component/Navbar.jsx"
 import {Link} from 'react-router-dom';
 import {movies} from "../MovieDetailPage/movies.js";
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import { useFormatters } from "../../utils/formatHelpers.js";
-import MovRow from "../Component/MovieRow.jsx"
-/*
-<section class="movies-row">
-        
-{movies.map((movie) => (
-  <div key={movie.id} className="card">
-  <Link to={`/movie/${movie.id}`}>
-     <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
-     <h3 className="moviecard-title">{movie.title}</h3>
-      <p class="meta">2010</p>
-    <p class="stars">★ ★ ★ ★ ☆</p>
-  </Link>
-</div>
-))}
+import Pagination from "../Component/Pagination/pagination.jsx";
 
-</section>*/
 
 function Browse(){
   const { t } = useLang();
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
+
+  const itemsPerPage = 9;
+    const [currentPage, setCurrentPage] = useState(1);
+    const totalPages = Math.ceil(movies.length / itemsPerPage);
+  
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentMovie = movies.slice(startIndex, startIndex + itemsPerPage);
 
   return(
     <div className="body">
@@ -66,7 +61,27 @@ function Browse(){
         <button class="btn" type="button" aria-disabled="true" title="Non-functional">{t("search")}</button>
       </form>
 
-      <MovRow rowslogan="" link_addon="" movD={movies}/>
+      
+    <div className="browse-movies">
+      {currentMovie.map((movie) => (
+                    <div key={movie.id} className="card">
+                    <Link to={`/movie/${movie.id}/${movie.title}`}>
+                    <div className="poster" aria-hidden="true"><img style={{width:"200px", height:"300px"}}src={movie.poster}/></div>
+                        <p  class="stars">{movie.rating}</p>
+                        <h3 className="moviecard-title">{movie.title}</h3>
+                        <p className="meta" >{formatDate(movie.releaseDate)}</p>
+                        <p class="stars">★ ★ ★ ★ ☆</p>
+                    </Link>
+                          </div>
+      ))}
+    </div>
+
+        <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+       
 
   </main>
 </div>

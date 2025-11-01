@@ -12,6 +12,7 @@ import ComingSoon from "./view/ComingSoonPage/ComingSoon.jsx"
 import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
 import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.jsx"
+import Profile from "./view/Profile/profile.jsx"
 
 function App() {
   const [count, setCount] = useState(0)
@@ -30,6 +31,7 @@ function App() {
         <Route path="/movie/:id/:title" element={<MovieDetailPage/>}/>
         <Route path="/ContactUs" element={<ContactUs/>}/>
         <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>
+        <Route path="/profile" element={<Profile/>}/>
       </Routes>
     </Router>
     </LanguageProvider>

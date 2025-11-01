@@ -1,6 +1,4 @@
 .body {
-
-    margin: 0;
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
     color: #0f172a;
@@ -98,17 +96,6 @@
     margin: 6px 0;
   }
   
-  .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    border-radius: 16px;
-    width:100%;
-    padding:30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-    margin-bottom:10px;
-  }
   
   .input, .select {
     padding: 8px 10px;
@@ -142,6 +129,7 @@
 
 .container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     max-width: none;      
     width: 80%;

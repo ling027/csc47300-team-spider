@@ -1,0 +1,18 @@
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    border-radius: 16px;
+    width:100%;
+    padding:30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    margin-bottom:10px;
+  }
+
+.browse-movies{
+  display: flex;
+  flex-wrap: wrap;          
+  gap: 40px;                  
+  margin-top: 40px;
+}
