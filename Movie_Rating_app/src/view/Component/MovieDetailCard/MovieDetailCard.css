@@ -9,8 +9,19 @@
   border-radius: 15px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
+
+.MovieDetail-Container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 100%;
+}
 
 .MovieTitle {
   font-size: 2.5rem;
@@ -18,6 +29,8 @@
   margin-bottom: 5px;
   text-align: left;
   text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .visual-container {
@@ -27,6 +40,8 @@
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 .MoviePoster {
   width: 300px;
@@ -37,10 +52,12 @@
 }
 
 .trailer {
-  width:auto;
-  height:450px;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 16 / 9;
   border-radius: 10px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  border: none;
 }
 
 .Genre-Container {

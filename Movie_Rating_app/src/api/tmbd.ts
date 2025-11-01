@@ -11,6 +11,56 @@ export interface Movie {
     vote_average: number;
   }
 
+  export interface Genre {
+    id: number;
+    name: string;
+  }
+
+  export interface Cast {
+    id: number;
+    name: string;
+    character: string;
+    order: number;
+  }
+
+  export interface Crew {
+    id: number;
+    name: string;
+    job: string;
+    department: string;
+  }
+
+  export interface Credits {
+    cast: Cast[];
+    crew: Crew[];
+  }
+
+  export interface ProductionCompany {
+    id: number;
+    name: string;
+  }
+
+  export interface Video {
+    id: string;
+    key: string;
+    name: string;
+    site: string;
+    size: number;
+    type: string;
+  }
+
+  export interface VideosResponse {
+    id: number;
+    results: Video[];
+  }
+
+  export interface MovieDetails extends Movie {
+    genres: Genre[];
+    runtime: number | null;
+    credits?: Credits;
+    production_companies?: ProductionCompany[];
+  }
+
   export interface PagedResponse<T> {
     page: number;
     results: T[];
@@ -44,6 +94,17 @@ export interface Movie {
       tmdbFetch<PagedResponse<Movie>>("/search/movie", { query: q, page }),
 
     getUpcomingMovies: (page = 1) =>
-        tmdbFetch<PagedResponse<Movie>>("/movie/upcoming", { page })
+        tmdbFetch<PagedResponse<Movie>>("/movie/upcoming", { page }),
+
+    getMovieDetails: async (id: number): Promise<MovieDetails & { credits: Credits }> => {
+      // Fetch movie details with credits in one call using append_to_response
+      const details = await tmdbFetch<MovieDetails & { credits: Credits }>(`/movie/${id}`, { 
+        append_to_response: 'credits'
+      });
+      return details;
+    },
+
+    getMovieVideos: (id: number) =>
+      tmdbFetch<VideosResponse>(`/movie/${id}/videos`)
   };
 

@@ -22,9 +22,21 @@ const MovieDetail = ({title, poster, trailer, genre, DOR, synopsis, rating,casts
                 <p>{DOR} • {rating} • {length}</p>
                 <section className="visual-container">
                     <img className="MoviePoster" src={poster}/>
-                    <video className="trailer" muted loop controls autoPlay>
-                        <source src={trailer}/>
-                    </video>
+                    {trailer && (
+                        trailer.startsWith('https://www.youtube.com/embed/') ? (
+                            <iframe 
+                                className="trailer"
+                                src={trailer}
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                                frameBorder="0"
+                            ></iframe>
+                        ) : (
+                            <video className="trailer" muted loop controls autoPlay>
+                                <source src={trailer}/>
+                            </video>
+                        )
+                    )}
                 </section>
                 <p className="Genre-Container">
                     <strong>{t("genreLabel")}</strong> {genre}</p>
