@@ -39,5 +39,9 @@ export interface Movie {
       tmdbFetch<PagedResponse<Movie>>("/trending/movie/week", { page }),
     movieById: (id: number) => tmdbFetch<Movie>(`/movie/${id}`),
     searchMovies: (q: string, page = 1) =>
-      tmdbFetch<PagedResponse<Movie>>("/search/movie", { query: q, page })
+      tmdbFetch<PagedResponse<Movie>>("/search/movie", { query: q, page }),
+
+    getUpcomingMovies: (page = 1) =>
+        tmdbFetch<PagedResponse<Movie>>("/movie/upcoming", { page })
   };
+
