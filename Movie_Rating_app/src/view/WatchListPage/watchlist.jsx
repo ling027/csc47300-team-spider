@@ -75,11 +75,51 @@ const initialListsData = [
 ];
 
 function getListStats(list) {
+  if (!list || !list.movies || list.movies.length === 0) {
+    return {
+      totalMovies: 0,
+      totalRuntime: '0h 0m',
+      avgRating: '0.0',
+      yearRange: '—'
+    };
+  }
+
+  // Calculate total movies
+  const totalMovies = list.movies.length;
+
+  // Calculate total runtime (sum of all runtimes in minutes)
+  const totalRuntimeMinutes = list.movies.reduce((sum, movie) => {
+    const runtime = typeof movie.runtime === 'number' ? movie.runtime : parseInt(movie.runtime) || 0;
+    return sum + runtime;
+  }, 0);
+  const hours = Math.floor(totalRuntimeMinutes / 60);
+  const minutes = totalRuntimeMinutes % 60;
+  const totalRuntime = `${hours}h ${minutes}m`;
+
+  // Calculate average rating
+  const totalRating = list.movies.reduce((sum, movie) => {
+    const rating = typeof movie.rating === 'number' ? movie.rating : parseFloat(movie.rating) || 0;
+    return sum + rating;
+  }, 0);
+  const avgRating = (totalRating / totalMovies).toFixed(1);
+
+  // Calculate year range
+  const years = list.movies
+    .map(movie => typeof movie.year === 'number' ? movie.year : parseInt(movie.year))
+    .filter(year => !isNaN(year));
+  
+  let yearRange = '—';
+  if (years.length > 0) {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    yearRange = minYear === maxYear ? `${minYear}` : `${minYear} - ${maxYear}`;
+  }
+
   return {
-    totalMovies: 12,
-    totalRuntime: '24h 30m',
-    avgRating: '4.2',
-    yearRange: '2010 - 2026'
+    totalMovies,
+    totalRuntime,
+    avgRating,
+    yearRange
   };
 }
 const renderStars = (rating) => {
@@ -390,7 +430,6 @@ function WatchList() {
                           <th>Title</th>
                           <th>Year</th>
                           <th>Runtime</th>
-                          <th>Runtime</th>
                           <th>Rating</th>
                           <th>Review</th>
                           <th className="right">Action</th>
@@ -453,7 +492,7 @@ function WatchList() {
                             </tr>
                             {movie.review && expandedReviews.has(movie.id) && (
                               <tr className="review-row">
-                                <td colSpan="7" className="review-content-cell">
+                                <td colSpan="6" className="review-content-cell">
                                   <div className="review-content">
                                     <p>{movie.review}</p>
                                   </div>
