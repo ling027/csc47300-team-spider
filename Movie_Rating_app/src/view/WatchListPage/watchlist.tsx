@@ -1,10 +1,50 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
+import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
-const initialListsData = [
+// Type definitions
+interface WatchlistMovie {
+  id: number;
+  title: string;
+  year: number;
+  rating: number;
+  runtime: number;
+  poster: string;
+  review?: string;
+}
+
+interface Watchlist {
+  id: number;
+  name: string;
+  movies: WatchlistMovie[];
+}
+
+interface ListStats {
+  totalMovies: number;
+  totalRuntime: string;
+  avgRating: string;
+  yearRange: string;
+}
+
+interface NewMovie {
+  title: string;
+  rating: number;
+  review: string;
+}
+
+interface SelectedMovie {
+  id: number;
+  title: string;
+  year: number;
+  runtime: number;
+  poster: string;
+  tmdbId: number;
+}
+
+const initialListsData: Watchlist[] = [
   {
     id: 1,
     name: "Must Watch",
@@ -74,16 +114,57 @@ const initialListsData = [
   }
 ];
 
-function getListStats(list) {
+function getListStats(list: Watchlist | undefined): ListStats {
+  if (!list || !list.movies || list.movies.length === 0) {
+    return {
+      totalMovies: 0,
+      totalRuntime: '0h 0m',
+      avgRating: '0.0',
+      yearRange: '—'
+    };
+  }
+
+  // Calculate total movies
+  const totalMovies = list.movies.length;
+
+  // Calculate total runtime (sum of all runtimes in minutes)
+  const totalRuntimeMinutes = list.movies.reduce((sum, movie) => {
+    const runtime = typeof movie.runtime === 'number' ? movie.runtime : parseInt(String(movie.runtime)) || 0;
+    return sum + runtime;
+  }, 0);
+  const hours = Math.floor(totalRuntimeMinutes / 60);
+  const minutes = totalRuntimeMinutes % 60;
+  const totalRuntime = `${hours}h ${minutes}m`;
+
+  // Calculate average rating
+  const totalRating = list.movies.reduce((sum, movie) => {
+    const rating = typeof movie.rating === 'number' ? movie.rating : parseFloat(String(movie.rating)) || 0;
+    return sum + rating;
+  }, 0);
+  const avgRating = (totalRating / totalMovies).toFixed(1);
+
+  // Calculate year range
+  const years = list.movies
+    .map(movie => typeof movie.year === 'number' ? movie.year : parseInt(String(movie.year)))
+    .filter(year => !isNaN(year));
+  
+  let yearRange = '—';
+  if (years.length > 0) {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    yearRange = minYear === maxYear ? `${minYear}` : `${minYear} - ${maxYear}`;
+  }
+
   return {
-    totalMovies: 12,
-    totalRuntime: '24h 30m',
-    avgRating: '4.2',
-    yearRange: '2010 - 2026'
+    totalMovies,
+    totalRuntime,
+    avgRating,
+    yearRange
   };
 }
-const renderStars = (rating) => {
-  const stars = [];
+
+const renderStars = (rating: number): React.ReactElement[] => {
+  const stars: React.ReactElement[] = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
       <span key={i} className={i <= rating ? 'stars' : 'star-empty'}>★</span>
@@ -91,31 +172,38 @@ const renderStars = (rating) => {
   }
   return stars;
 };
-function WatchList() {
-  const [lists, setLists] = useState(initialListsData);
-  const [selectedListId, setSelectedListId] = useState(1);
-  const [showNewListForm, setShowNewListForm] = useState(false);
-  const [newListName, setNewListName] = useState("");
-  const [showAddMovieForm, setShowAddMovieForm] = useState(false);
-  const [newMovie, setNewMovie] = useState({
+
+function WatchList(): React.ReactElement {
+  const [lists, setLists] = useState<Watchlist[]>(initialListsData);
+  const [selectedListId, setSelectedListId] = useState<number>(1);
+  const [showNewListForm, setShowNewListForm] = useState<boolean>(false);
+  const [newListName, setNewListName] = useState<string>("");
+  const [showAddMovieForm, setShowAddMovieForm] = useState<boolean>(false);
+  const [newMovie, setNewMovie] = useState<NewMovie>({
     title: '',
     rating: 0,
     review: ''
   });
-  const [expandedReviews, setExpandedReviews] = useState(new Set());
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  
+  // Movie search state
+  const [movieSearchQuery, setMovieSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
 
-  const toggleNewListForm = () => {
+  const toggleNewListForm = (): void => {
     setShowNewListForm(!showNewListForm);
   };
 
-  const createNewList = () => {
+  const createNewList = (): void => {
     const name = newListName.trim();
     if (name) {
       const nextListId = (lists.length ? Math.max(...lists.map(l => l.id)) : 0) + 1;
-      const newList = { id: nextListId, name: name, movies: [] };
+      const newList: Watchlist = { id: nextListId, name: name, movies: [] };
       setLists([...lists, newList]);
       setNewListName('');
       setShowNewListForm(false);
@@ -123,7 +211,7 @@ function WatchList() {
     }
   };
 
-  const deleteList = (event, listId) => {
+  const deleteList = (event: React.MouseEvent<HTMLButtonElement>, listId: number): void => {
     event.stopPropagation();
     if (lists.length > 1) {
       const newLists = lists.filter(l => l.id !== listId);
@@ -134,7 +222,7 @@ function WatchList() {
     }
   };
 
-  const toggleAddMovieForm = () => {
+  const toggleAddMovieForm = (): void => {
     setShowAddMovieForm(!showAddMovieForm);
     if (!showAddMovieForm) {
       setNewMovie({
@@ -142,24 +230,28 @@ function WatchList() {
         rating: 0,
         review: ''
       });
+      setMovieSearchQuery('');
+      setSearchResults([]);
+      setSelectedMovie(null);
+      setIsSearching(false);
     }
   };
 
-  const handleMovieInputChange = (field, value) => {
+  const handleMovieInputChange = (field: keyof NewMovie, value: string | number): void => {
     setNewMovie(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleStarClick = (rating) => {
+  const handleStarClick = (rating: number): void => {
     setNewMovie(prev => ({
       ...prev,
       rating: rating
     }));
   };
 
-  const toggleReviewExpansion = (movieId) => {
+  const toggleReviewExpansion = (movieId: number): void => {
     setExpandedReviews(prev => {
       const newSet = new Set(prev);
       if (newSet.has(movieId)) {
@@ -171,18 +263,90 @@ function WatchList() {
     });
   };
 
-  const addMovieToList = () => {
-    const { title, rating, review } = newMovie;
+  // Search movies from TMDB API
+  useEffect(() => {
+    const searchMovies = async (): Promise<void> => {
+      if (!movieSearchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const response = await tmdb.searchMovies(movieSearchQuery.trim(), 1);
+        setSearchResults(response.results.slice(0, 5)); // Limit to 5 results
+      } catch (error) {
+        console.error('Error searching movies:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMovies, 500); // Debounce search
+    return () => clearTimeout(timeoutId);
+  }, [movieSearchQuery]);
+
+  // Handle movie selection from search results
+  const handleSelectMovie = async (movie: TmdbMovie): Promise<void> => {
+    try {
+      // Fetch full movie details to get runtime
+      const movieDetails = await tmdb.getMovieDetails(movie.id);
+      
+      const year = movieDetails.release_date 
+        ? new Date(movieDetails.release_date).getFullYear() 
+        : new Date().getFullYear();
+      
+      setSelectedMovie({
+        id: movieDetails.id,
+        title: movieDetails.title,
+        year: year,
+        runtime: movieDetails.runtime || 120,
+        poster: movieDetails.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
+          : "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image",
+        tmdbId: movieDetails.id
+      });
+      
+      setNewMovie(prev => ({
+        ...prev,
+        title: movieDetails.title
+      }));
+      
+      setMovieSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+      alert('Failed to load movie details. Please try again.');
+    }
+  };
+
+  const addMovieToList = (): void => {
+    const { rating, review } = newMovie;
     
-    if (!title.trim() || rating === 0) {
-      alert('Please fill in all required fields (title and rating)');
+    if (!selectedMovie && !newMovie.title.trim()) {
+      alert('Please search and select a movie from the API, or enter a movie title');
+      return;
+    }
+    
+    if (rating === 0) {
+      alert('Please provide a rating');
       return;
     }
 
-    const movieToAdd = {
+    const movieToAdd: WatchlistMovie = selectedMovie ? {
+      id: selectedMovie.tmdbId, // Use TMDB ID as the unique identifier
+      title: selectedMovie.title,
+      year: selectedMovie.year,
+      runtime: selectedMovie.runtime,
+      rating: rating,
+      review: review.trim(),
+      poster: selectedMovie.poster
+    } : {
       id: Date.now(),
-      title: title.trim(),
-      year: 2024,
+      title: newMovie.title.trim(),
+      year: new Date().getFullYear(),
       runtime: 120,
       rating: rating,
       review: review.trim(),
@@ -206,6 +370,9 @@ function WatchList() {
       rating: 0,
       review: ''
     });
+    setMovieSearchQuery('');
+    setSearchResults([]);
+    setSelectedMovie(null);
   };
 
   return (
@@ -304,13 +471,83 @@ function WatchList() {
                 {showAddMovieForm && (
                   <div className="add-movie-form">
                     <h3>Add New Movie</h3>
+                    
                     <div className="form-group">
-                      <label>Movie Title *</label>
+                      <label>Search Movie from TMDB *</label>
+                      <input
+                        type="text"
+                        value={movieSearchQuery}
+                        onChange={(e) => setMovieSearchQuery(e.target.value)}
+                        placeholder="Search for a movie..."
+                        disabled={!!selectedMovie}
+                      />
+                      {isSearching && (
+                        <div className="search-status">
+                          Searching...
+                        </div>
+                      )}
+                      {!selectedMovie && searchResults.length > 0 && (
+                        <div className="movie-search-results">
+                          {searchResults.map((movie) => (
+                            <div
+                              key={movie.id}
+                              className="movie-search-result-item"
+                              onClick={() => handleSelectMovie(movie)}
+                            >
+                              {movie.poster_path && (
+                                <img
+                                  src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                                  alt={movie.title}
+                                  className="movie-search-result-poster"
+                                />
+                              )}
+                              <div>
+                                <div className="movie-search-result-title">{movie.title}</div>
+                                {movie.release_date && (
+                                  <div className="movie-search-result-year">
+                                    {new Date(movie.release_date).getFullYear()}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {selectedMovie && (
+                        <div className="movie-selected">
+                          <img
+                            src={selectedMovie.poster}
+                            alt={selectedMovie.title}
+                            className="movie-selected-poster"
+                          />
+                          <div className="movie-selected-info">
+                            <div className="movie-selected-title">{selectedMovie.title}</div>
+                            <div className="movie-selected-details">
+                              {selectedMovie.year} • {selectedMovie.runtime} min
+                            </div>
+                          </div>
+                          <button
+                            className="btn-clear-movie"
+                            onClick={() => {
+                              setSelectedMovie(null);
+                              setMovieSearchQuery('');
+                              setNewMovie(prev => ({ ...prev, title: '' }));
+                            }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label>Or Enter Movie Title Manually</label>
                       <input
                         type="text"
                         value={newMovie.title}
                         onChange={(e) => handleMovieInputChange('title', e.target.value)}
-                        placeholder="Enter movie title"
+                        placeholder="Enter movie title manually"
+                        disabled={!!selectedMovie}
                       />
                     </div>
                     
@@ -322,8 +559,6 @@ function WatchList() {
                             key={star}
                             className={`star ${star <= newMovie.rating ? 'filled' : ''}`}
                             onClick={() => handleStarClick(star)}
-                            onMouseEnter={() => {
-                            }}
                           >
                             ★
                           </span>
@@ -340,8 +575,8 @@ function WatchList() {
                         value={newMovie.review}
                         onChange={(e) => handleMovieInputChange('review', e.target.value)}
                         placeholder="Write your review here..."
-                        rows="3"
-                        maxLength="500"
+                        rows={3}
+                        maxLength={500}
                       />
                       <div className="char-count">
                         {newMovie.review.length}/500 characters
@@ -375,7 +610,7 @@ function WatchList() {
                       </thead>
                       <tbody>
                         <tr>
-                          <td colSpan="7" className="empty-state">
+                          <td colSpan={7} className="empty-state">
                             <div className="empty-icon">🎬</div>
                             <p>No movies in this list yet</p>
                           </td>
@@ -389,7 +624,6 @@ function WatchList() {
                           <th>Poster</th>
                           <th>Title</th>
                           <th>Year</th>
-                          <th>Runtime</th>
                           <th>Runtime</th>
                           <th>Rating</th>
                           <th>Review</th>
@@ -406,7 +640,7 @@ function WatchList() {
                                   alt={`${movie.title} poster`}
                                   className="movie-poster"
                                   onError={(e) => {
-                                    e.target.src = "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image";
+                                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image";
                                   }}
                                 />
                               </td>
@@ -453,7 +687,7 @@ function WatchList() {
                             </tr>
                             {movie.review && expandedReviews.has(movie.id) && (
                               <tr className="review-row">
-                                <td colSpan="7" className="review-content-cell">
+                                <td colSpan={6} className="review-content-cell">
                                   <div className="review-content">
                                     <p>{movie.review}</p>
                                   </div>
@@ -485,3 +719,4 @@ function WatchList() {
 }
 
 export default WatchList;
+
