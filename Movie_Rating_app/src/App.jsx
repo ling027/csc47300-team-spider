@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import './App.css'
 import Browse from "./view/BrowsePage/browse.tsx"
 import Home from "./view/HomePage/home.jsx"
@@ -28,8 +29,22 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/signup" element={<SignUp/>}/>
-            <Route path="/watchlist" element={<WatchList/>}/>
-            <Route path="/discussions" element={<DiscussionPage/>}/>
+            <Route 
+              path="/watchlist" 
+              element={
+                <ProtectedRoute>
+                  <WatchList/>
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/discussions" 
+              element={
+                <ProtectedRoute>
+                  <DiscussionPage/>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/movie/:id/:title" element={<MovieDetailPage/>}/>
             <Route path="/ContactUs" element={<ContactUs/>}/>
             <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>

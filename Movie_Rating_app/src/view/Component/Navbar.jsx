@@ -26,8 +26,12 @@ function NavBar() {
             <Link to="/" className="nav-link"><IoHomeOutline />{ t("home")}</Link>
             <Link to="/browse" className="nav-link"><IoSearchSharp/>{t("browse")}</Link>
             <Link to="/coming-soon" className="nav-link"><MdMovieFilter/>{t("comingSoon")}</Link>
-            <Link to="/watchlist" className="nav-link"> <FaRegBookmark/>{t("watchlist")}</Link>
-            <Link to="/discussions" className="nav-link">💬 Discussions</Link>
+            {isAuthenticated && (
+              <>
+                <Link to="/watchlist" className="nav-link"> <FaRegBookmark/>{t("watchlist")}</Link>
+                <Link to="/discussions" className="nav-link">💬 Discussions</Link>
+              </>
+            )}
             {isAuthenticated ? (
                 <>
                     <Link to="/profile" className="nav-link"><MdContactSupport/>Profile</Link>
