@@ -2,13 +2,26 @@ import "./profile.css";
 import "../main.css";
 import NavBar from "../Component/Navbar.jsx";
 import { useLang } from "../../i18n/LanguageContext.jsx";
+import { useAuth } from "../../context/AuthContext";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function Profile() {
   const { t } = useLang();
+  const { user: authUser, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
   const [user] = useState({
-    username: "MovieFan123",
-    email: "moviefan@example.com",
+    username: authUser?.username || "MovieFan123",
+    email: authUser?.email || "moviefan@example.com",
+    fullName: authUser?.fullName || "Movie Fan",
     joined: "March 2024",
     avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
     stats: {
