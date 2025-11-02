@@ -115,7 +115,12 @@ export interface Movie {
     getGenres: () =>
       tmdbFetch<GenresResponse>("/genre/movie/list"),
 
-    discoverMoviesByGenre: (genreId: number, page = 1) =>
-      tmdbFetch<PagedResponse<Movie>>("/discover/movie", { with_genres: genreId, page })
+    discoverMoviesByGenre: (genreId: number, page = 1, minRating?: number) => {
+      const params: Record<string, string | number> = { with_genres: genreId, page };
+      if (minRating !== undefined) {
+        params['vote_average.gte'] = minRating;
+      }
+      return tmdbFetch<PagedResponse<Movie>>("/discover/movie", params);
+    }
   };
 

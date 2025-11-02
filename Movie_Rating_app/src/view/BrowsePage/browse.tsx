@@ -45,6 +45,7 @@ function Browse() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [totalSearchPages, setTotalSearchPages] = useState(1);
   const [genreMovies, setGenreMovies] = useState<MovieData[]>([]);
   const [totalGenrePages, setTotalGenrePages] = useState(1);
@@ -122,7 +123,7 @@ function Browse() {
 
       try {
         setLoading(true);
-        const genreResponse = await tmdb.discoverMoviesByGenre(selectedGenre, currentPage);
+        const genreResponse = await tmdb.discoverMoviesByGenre(selectedGenre, currentPage, selectedRating || undefined);
         const transformed = genreResponse.results.map(transformMovie);
         setGenreMovies(transformed);
         setTotalGenrePages(genreResponse.total_pages);
@@ -137,7 +138,7 @@ function Browse() {
     if (selectedGenre !== null) {
       fetchGenreMovies();
     }
-  }, [selectedGenre, currentPage]);
+  }, [selectedGenre, currentPage, selectedRating]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +170,15 @@ function Browse() {
     setCurrentPage(1);
   };
 
+  const handleRatingChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const ratingValue = e.target.value;
+    // Rating ranges on TMDB 0-10 scale
+    // "8+" = 8.0+, "7+" = 7.0+, "6+" = 6.0+, "5+" = 5.0+, "4+" = 4.0+
+    const minRating = ratingValue === "" ? null : parseFloat(ratingValue);
+    setSelectedRating(minRating);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
   // Show full loading screen only on initial load
   if (initialLoad && loading) {
     return (
@@ -189,15 +199,26 @@ function Browse() {
   let currentMovies: MovieData[];
   
   if (isFilteringByGenre && selectedGenre !== null) {
+    // Genre results with API-level rating filtering (already applied in API call)
     totalPages = totalGenrePages;
-    currentMovies = genreMovies; // Genre results are already paginated by API
+    currentMovies = genreMovies;
   } else if (isSearching) {
-    totalPages = totalSearchPages;
-    currentMovies = searchResults; // Search results are already paginated by API
+    // Search results - apply client-side rating filter since search API doesn't support vote_average
+    let filteredResults = searchResults;
+    if (selectedRating !== null) {
+      filteredResults = searchResults.filter(movie => movie.ratingValue >= selectedRating);
+    }
+    totalPages = totalSearchPages; // Keep original page count for navigation
+    currentMovies = filteredResults;
   } else {
-    totalPages = Math.ceil(trendingMovies.length / itemsPerPage);
+    // Trending movies - apply client-side rating filter and pagination
+    let filteredMovies = trendingMovies;
+    if (selectedRating !== null) {
+      filteredMovies = trendingMovies.filter(movie => movie.ratingValue >= selectedRating);
+    }
+    totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    currentMovies = trendingMovies.slice(startIndex, startIndex + itemsPerPage);
+    currentMovies = filteredMovies.slice(startIndex, startIndex + itemsPerPage);
   }
 
   return (
@@ -241,12 +262,18 @@ function Browse() {
           <label className="visually-hidden" htmlFor="rating">
             Rating
           </label>
-          <select id="rating" className="select" defaultValue="Any Rating">
-            <option>{t("anyRating")}</option>
-            <option>★ 5</option>
-            <option>★ 4+</option>
-            <option>★ 3+</option>
-            <option>★ 2+</option>
+          <select 
+            id="rating" 
+            className="select" 
+            value={selectedRating === null ? "" : selectedRating.toString()}
+            onChange={handleRatingChange}
+          >
+            <option value="">{t("anyRating")}</option>
+            <option value="8">8.0+ (Excellent)</option>
+            <option value="7">7.0+ (Very Good)</option>
+            <option value="6">6.0+ (Good)</option>
+            <option value="5">5.0+ (Average)</option>
+            <option value="4">4.0+ (Below Average)</option>
           </select>
 
           <button className="btn" type="submit">
@@ -258,11 +285,15 @@ function Browse() {
           <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>Loading...</div>
         ) : currentMovies.length === 0 && isSearching ? (
           <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
-            No movies found for "{searchQuery}"
+            No movies found for "{searchQuery}"{selectedRating !== null ? ` with rating ${selectedRating.toFixed(1)}+` : ""}
           </div>
         ) : currentMovies.length === 0 && isFilteringByGenre ? (
           <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
-            No movies found for this genre
+            No movies found for this genre{selectedRating !== null ? ` with rating ${selectedRating.toFixed(1)}+` : ""}
+          </div>
+        ) : currentMovies.length === 0 ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
+            No movies found{selectedRating !== null ? ` with rating ${selectedRating.toFixed(1)}+` : ""}
           </div>
         ) : (
           <>
