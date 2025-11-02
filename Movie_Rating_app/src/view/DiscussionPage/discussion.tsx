@@ -3,8 +3,27 @@ import './discussion.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 
+// Type definitions
+interface Thread {
+  id: number;
+  title: string;
+  movie: string;
+  author: string;
+  replies: number;
+  views: number;
+  lastActivity: string;
+  tags: string[];
+  content: string;
+}
 
-const initialThreads = [
+interface NewThreadForm {
+  title: string;
+  movie: string;
+  content: string;
+  tags: string;
+}
+
+const initialThreads: Thread[] = [
   {
     id: 1,
     title: "Inception - Mind-bending masterpiece discussion",
@@ -40,18 +59,18 @@ const initialThreads = [
   }
 ];
 
-function DiscussionPage() {
-  const [threads, setThreads] = useState(initialThreads);
-  const [showNewThreadForm, setShowNewThreadForm] = useState(false);
-  const [expandedThreads, setExpandedThreads] = useState(new Set());
-  const [newThread, setNewThread] = useState({
+function DiscussionPage(): React.ReactElement {
+  const [threads, setThreads] = useState<Thread[]>(initialThreads);
+  const [showNewThreadForm, setShowNewThreadForm] = useState<boolean>(false);
+  const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
+  const [newThread, setNewThread] = useState<NewThreadForm>({
     title: '',
     movie: '',
     content: '',
     tags: ''
   });
 
-  const toggleNewThreadForm = () => {
+  const toggleNewThreadForm = (): void => {
     setShowNewThreadForm(!showNewThreadForm);
     if (!showNewThreadForm) {
       setNewThread({
@@ -63,7 +82,7 @@ function DiscussionPage() {
     }
   };
 
-  const toggleThreadExpansion = (threadId) => {
+  const toggleThreadExpansion = (threadId: number): void => {
     setExpandedThreads(prev => {
       const newSet = new Set(prev);
       if (newSet.has(threadId)) {
@@ -75,14 +94,14 @@ function DiscussionPage() {
     });
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof NewThreadForm, value: string): void => {
     setNewThread(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const createNewThread = () => {
+  const createNewThread = (): void => {
     const { title, movie, content, tags } = newThread;
     
     if (!title.trim() || !movie.trim() || !content.trim()) {
@@ -90,7 +109,7 @@ function DiscussionPage() {
       return;
     }
 
-    const threadToAdd = {
+    const threadToAdd: Thread = {
       id: Date.now(),
       title: title.trim(),
       movie: movie.trim(),
@@ -187,8 +206,8 @@ function DiscussionPage() {
                     value={newThread.content}
                     onChange={(e) => handleInputChange('content', e.target.value)}
                     placeholder="Start your discussion..."
-                    rows="4"
-                    maxLength="1000"
+                    rows={4}
+                    maxLength={1000}
                   />
                   <div className="char-count">
                     {newThread.content.length}/1000 characters
@@ -287,3 +306,4 @@ function DiscussionPage() {
 }
 
 export default DiscussionPage;
+
