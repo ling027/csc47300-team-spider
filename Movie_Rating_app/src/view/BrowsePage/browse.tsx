@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import NavBar from "../Component/Navbar";
 import { Link } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
-import { useFormatters } from "../../utils/formatHelpers";
+import { useFormatters, getStars } from "../../utils/formatHelpers";
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 import Pagination from "../Component/Pagination/pagination";
 
@@ -35,11 +35,17 @@ function Browse() {
   const { t } = useLang();
   const { formatDate } = useFormatters();
   const [trendingMovies, setTrendingMovies] = useState<MovieData[]>([]);
+  const [searchResults, setSearchResults] = useState<MovieData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [totalSearchPages, setTotalSearchPages] = useState(1);
 
   const itemsPerPage = 20;
 
+  // Fetch trending movies on initial load
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -51,12 +57,62 @@ function Browse() {
         console.error("Error fetching movies:", error);
       } finally {
         setLoading(false);
+        setInitialLoad(false);
       }
     };
-    fetchMovies();
-  }, []);
+    if (initialLoad && !isSearching) {
+      fetchMovies();
+    }
+  }, [initialLoad, isSearching]);
 
-  if (loading) {
+  // Fetch search results when searching
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!searchQuery.trim()) {
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const searchResponse = await tmdb.searchMovies(searchQuery.trim(), currentPage);
+        const transformed = searchResponse.results.map(transformMovie);
+        setSearchResults(transformed);
+        setTotalSearchPages(searchResponse.total_pages);
+      } catch (error) {
+        console.error("Error searching movies:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isSearching && searchQuery.trim()) {
+      fetchSearchResults();
+    }
+  }, [searchQuery, currentPage, isSearching]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+      setCurrentPage(1); // Reset to first page on new search
+    } else {
+      setIsSearching(false);
+      setSearchResults([]);
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (!e.target.value.trim()) {
+      setIsSearching(false);
+      setSearchResults([]);
+      setCurrentPage(1);
+    }
+  };
+
+  // Show full loading screen only on initial load
+  if (initialLoad && loading) {
     return (
       <div className="body">
         <header className="site-header">
@@ -69,9 +125,21 @@ function Browse() {
     );
   }
 
-  const totalPages = Math.ceil(trendingMovies.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentMovies = trendingMovies.slice(startIndex, startIndex + itemsPerPage);
+  // Determine which movies to display
+  const displayMovies = isSearching ? searchResults : trendingMovies;
+  
+  // Calculate pagination - for search, use API pagination; for trending, use client-side pagination
+  let totalPages: number;
+  let currentMovies: MovieData[];
+  
+  if (isSearching) {
+    totalPages = totalSearchPages;
+    currentMovies = displayMovies; // Search results are already paginated by API
+  } else {
+    totalPages = Math.ceil(trendingMovies.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    currentMovies = trendingMovies.slice(startIndex, startIndex + itemsPerPage);
+  }
 
   return (
     <div className="body">
@@ -81,11 +149,18 @@ function Browse() {
       <main className="container">
         <h2 style={{color:"white"}}>{t("browseHeader")}</h2>
 
-        <form className="toolbar" role="search" aria-label="Movie search (visual only)">
+        <form className="toolbar" role="search" onSubmit={handleSearch}>
           <label className="visually-hidden" htmlFor="q">
             Search
           </label>
-          <input id="q" className="input" type="search" placeholder={t("searchPlaceholder")} />
+          <input 
+            id="q" 
+            className="input" 
+            type="search" 
+            placeholder={t("searchPlaceholder")}
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+          />
 
           <label className="visually-hidden" htmlFor="genre">
             Genre
@@ -112,34 +187,46 @@ function Browse() {
             <option>★ 2+</option>
           </select>
 
-          <button className="btn" type="button" aria-disabled="true" title="Non-functional">
+          <button className="btn" type="submit">
             {t("search")}
           </button>
         </form>
 
-        <div className="browse-movies">
-          {currentMovies.map((movie) => (
-            <div key={movie.id} className="card">
-              <Link to={`/movie/${movie.id}/${movie.title}`}>
-                <img
-                  style={{ width: "200px", height: "300px" }}
-                  src={movie.poster}
-                  alt={movie.title}
-                />
-                <p className="stars">{movie.rating}</p>
-                <h3>{movie.title}</h3>
-                <p className="meta">{formatDate(movie.releaseDate)}</p>
-                <p className="stars">★ ★ ★ ★ ☆</p>
-              </Link>
+        {loading ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>Loading...</div>
+        ) : currentMovies.length === 0 && isSearching ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
+            No movies found for "{searchQuery}"
+          </div>
+        ) : (
+          <>
+            <div className="browse-movies">
+              {currentMovies.map((movie) => (
+                <div key={movie.id} className="card">
+                  <Link to={`/movie/${movie.id}/${movie.title}`}>
+                    <img
+                      style={{ width: "200px", height: "300px" }}
+                      src={movie.poster}
+                      alt={movie.title}
+                    />
+                    <p className="stars">{movie.rating}</p>
+                    <h3>{movie.title}</h3>
+                    <p className="meta">{formatDate(movie.releaseDate)}</p>
+                    <p className="stars">{getStars(movie.ratingValue !== undefined ? movie.ratingValue : movie.rating)}</p>
+                  </Link>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
+        )}
       </main>
     </div>
   );
