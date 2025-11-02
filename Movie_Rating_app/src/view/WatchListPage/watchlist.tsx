@@ -3,9 +3,48 @@ import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
-import { tmdb } from '../../api/tmbd.js';
+import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
-const initialListsData = [
+// Type definitions
+interface WatchlistMovie {
+  id: number;
+  title: string;
+  year: number;
+  rating: number;
+  runtime: number;
+  poster: string;
+  review?: string;
+}
+
+interface Watchlist {
+  id: number;
+  name: string;
+  movies: WatchlistMovie[];
+}
+
+interface ListStats {
+  totalMovies: number;
+  totalRuntime: string;
+  avgRating: string;
+  yearRange: string;
+}
+
+interface NewMovie {
+  title: string;
+  rating: number;
+  review: string;
+}
+
+interface SelectedMovie {
+  id: number;
+  title: string;
+  year: number;
+  runtime: number;
+  poster: string;
+  tmdbId: number;
+}
+
+const initialListsData: Watchlist[] = [
   {
     id: 1,
     name: "Must Watch",
@@ -75,7 +114,7 @@ const initialListsData = [
   }
 ];
 
-function getListStats(list) {
+function getListStats(list: Watchlist | undefined): ListStats {
   if (!list || !list.movies || list.movies.length === 0) {
     return {
       totalMovies: 0,
@@ -90,7 +129,7 @@ function getListStats(list) {
 
   // Calculate total runtime (sum of all runtimes in minutes)
   const totalRuntimeMinutes = list.movies.reduce((sum, movie) => {
-    const runtime = typeof movie.runtime === 'number' ? movie.runtime : parseInt(movie.runtime) || 0;
+    const runtime = typeof movie.runtime === 'number' ? movie.runtime : parseInt(String(movie.runtime)) || 0;
     return sum + runtime;
   }, 0);
   const hours = Math.floor(totalRuntimeMinutes / 60);
@@ -99,14 +138,14 @@ function getListStats(list) {
 
   // Calculate average rating
   const totalRating = list.movies.reduce((sum, movie) => {
-    const rating = typeof movie.rating === 'number' ? movie.rating : parseFloat(movie.rating) || 0;
+    const rating = typeof movie.rating === 'number' ? movie.rating : parseFloat(String(movie.rating)) || 0;
     return sum + rating;
   }, 0);
   const avgRating = (totalRating / totalMovies).toFixed(1);
 
   // Calculate year range
   const years = list.movies
-    .map(movie => typeof movie.year === 'number' ? movie.year : parseInt(movie.year))
+    .map(movie => typeof movie.year === 'number' ? movie.year : parseInt(String(movie.year)))
     .filter(year => !isNaN(year));
   
   let yearRange = '—';
@@ -123,8 +162,9 @@ function getListStats(list) {
     yearRange
   };
 }
-const renderStars = (rating) => {
-  const stars = [];
+
+const renderStars = (rating: number): React.ReactElement[] => {
+  const stars: React.ReactElement[] = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
       <span key={i} className={i <= rating ? 'stars' : 'star-empty'}>★</span>
@@ -132,37 +172,38 @@ const renderStars = (rating) => {
   }
   return stars;
 };
-function WatchList() {
-  const [lists, setLists] = useState(initialListsData);
-  const [selectedListId, setSelectedListId] = useState(1);
-  const [showNewListForm, setShowNewListForm] = useState(false);
-  const [newListName, setNewListName] = useState("");
-  const [showAddMovieForm, setShowAddMovieForm] = useState(false);
-  const [newMovie, setNewMovie] = useState({
+
+function WatchList(): React.ReactElement {
+  const [lists, setLists] = useState<Watchlist[]>(initialListsData);
+  const [selectedListId, setSelectedListId] = useState<number>(1);
+  const [showNewListForm, setShowNewListForm] = useState<boolean>(false);
+  const [newListName, setNewListName] = useState<string>("");
+  const [showAddMovieForm, setShowAddMovieForm] = useState<boolean>(false);
+  const [newMovie, setNewMovie] = useState<NewMovie>({
     title: '',
     rating: 0,
     review: ''
   });
-  const [expandedReviews, setExpandedReviews] = useState(new Set());
+  const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
   
   // Movie search state
-  const [movieSearchQuery, setMovieSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [movieSearchQuery, setMovieSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
 
-  const toggleNewListForm = () => {
+  const toggleNewListForm = (): void => {
     setShowNewListForm(!showNewListForm);
   };
 
-  const createNewList = () => {
+  const createNewList = (): void => {
     const name = newListName.trim();
     if (name) {
       const nextListId = (lists.length ? Math.max(...lists.map(l => l.id)) : 0) + 1;
-      const newList = { id: nextListId, name: name, movies: [] };
+      const newList: Watchlist = { id: nextListId, name: name, movies: [] };
       setLists([...lists, newList]);
       setNewListName('');
       setShowNewListForm(false);
@@ -170,7 +211,7 @@ function WatchList() {
     }
   };
 
-  const deleteList = (event, listId) => {
+  const deleteList = (event: React.MouseEvent<HTMLButtonElement>, listId: number): void => {
     event.stopPropagation();
     if (lists.length > 1) {
       const newLists = lists.filter(l => l.id !== listId);
@@ -181,7 +222,7 @@ function WatchList() {
     }
   };
 
-  const toggleAddMovieForm = () => {
+  const toggleAddMovieForm = (): void => {
     setShowAddMovieForm(!showAddMovieForm);
     if (!showAddMovieForm) {
       setNewMovie({
@@ -196,21 +237,21 @@ function WatchList() {
     }
   };
 
-  const handleMovieInputChange = (field, value) => {
+  const handleMovieInputChange = (field: keyof NewMovie, value: string | number): void => {
     setNewMovie(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleStarClick = (rating) => {
+  const handleStarClick = (rating: number): void => {
     setNewMovie(prev => ({
       ...prev,
       rating: rating
     }));
   };
 
-  const toggleReviewExpansion = (movieId) => {
+  const toggleReviewExpansion = (movieId: number): void => {
     setExpandedReviews(prev => {
       const newSet = new Set(prev);
       if (newSet.has(movieId)) {
@@ -224,7 +265,7 @@ function WatchList() {
 
   // Search movies from TMDB API
   useEffect(() => {
-    const searchMovies = async () => {
+    const searchMovies = async (): Promise<void> => {
       if (!movieSearchQuery.trim()) {
         setSearchResults([]);
         setIsSearching(false);
@@ -248,7 +289,7 @@ function WatchList() {
   }, [movieSearchQuery]);
 
   // Handle movie selection from search results
-  const handleSelectMovie = async (movie) => {
+  const handleSelectMovie = async (movie: TmdbMovie): Promise<void> => {
     try {
       // Fetch full movie details to get runtime
       const movieDetails = await tmdb.getMovieDetails(movie.id);
@@ -281,7 +322,7 @@ function WatchList() {
     }
   };
 
-  const addMovieToList = () => {
+  const addMovieToList = (): void => {
     const { rating, review } = newMovie;
     
     if (!selectedMovie && !newMovie.title.trim()) {
@@ -294,7 +335,7 @@ function WatchList() {
       return;
     }
 
-    const movieToAdd = selectedMovie ? {
+    const movieToAdd: WatchlistMovie = selectedMovie ? {
       id: selectedMovie.tmdbId, // Use TMDB ID as the unique identifier
       title: selectedMovie.title,
       year: selectedMovie.year,
@@ -518,8 +559,6 @@ function WatchList() {
                             key={star}
                             className={`star ${star <= newMovie.rating ? 'filled' : ''}`}
                             onClick={() => handleStarClick(star)}
-                            onMouseEnter={() => {
-                            }}
                           >
                             ★
                           </span>
@@ -536,8 +575,8 @@ function WatchList() {
                         value={newMovie.review}
                         onChange={(e) => handleMovieInputChange('review', e.target.value)}
                         placeholder="Write your review here..."
-                        rows="3"
-                        maxLength="500"
+                        rows={3}
+                        maxLength={500}
                       />
                       <div className="char-count">
                         {newMovie.review.length}/500 characters
@@ -571,7 +610,7 @@ function WatchList() {
                       </thead>
                       <tbody>
                         <tr>
-                          <td colSpan="7" className="empty-state">
+                          <td colSpan={7} className="empty-state">
                             <div className="empty-icon">🎬</div>
                             <p>No movies in this list yet</p>
                           </td>
@@ -601,7 +640,7 @@ function WatchList() {
                                   alt={`${movie.title} poster`}
                                   className="movie-poster"
                                   onError={(e) => {
-                                    e.target.src = "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image";
+                                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image";
                                   }}
                                 />
                               </td>
@@ -648,7 +687,7 @@ function WatchList() {
                             </tr>
                             {movie.review && expandedReviews.has(movie.id) && (
                               <tr className="review-row">
-                                <td colSpan="6" className="review-content-cell">
+                                <td colSpan={6} className="review-content-cell">
                                   <div className="review-content">
                                     <p>{movie.review}</p>
                                   </div>
@@ -680,3 +719,4 @@ function WatchList() {
 }
 
 export default WatchList;
+
