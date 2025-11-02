@@ -5,7 +5,7 @@ import NavBar from "../Component/Navbar";
 import { Link } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
 import { useFormatters, getStars } from "../../utils/formatHelpers";
-import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
+import { tmdb, type Movie as TmdbMovie, type Genre } from '../../api/tmbd';
 import Pagination from "../Component/Pagination/pagination";
 
 interface MovieData {
@@ -15,6 +15,7 @@ interface MovieData {
   rating: string;
   ratingValue: number;
   releaseDate: string;
+  genreIds?: number[];
   trailer?: string;
 }
 
@@ -28,6 +29,7 @@ function transformMovie(movie: TmdbMovie): MovieData {
     rating: movie.vote_average ? `${movie.vote_average.toFixed(1)}/10` : 'N/A',
     ratingValue: movie.vote_average || 0,
     releaseDate: movie.release_date || '',
+    genreIds: movie.genre_ids,
   };
 }
 
@@ -36,14 +38,32 @@ function Browse() {
   const { formatDate } = useFormatters();
   const [trendingMovies, setTrendingMovies] = useState<MovieData[]>([]);
   const [searchResults, setSearchResults] = useState<MovieData[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [totalSearchPages, setTotalSearchPages] = useState(1);
+  const [genreMovies, setGenreMovies] = useState<MovieData[]>([]);
+  const [totalGenrePages, setTotalGenrePages] = useState(1);
+  const [isFilteringByGenre, setIsFilteringByGenre] = useState(false);
 
   const itemsPerPage = 20;
+
+  // Fetch genres on initial load
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const genresResponse = await tmdb.getGenres();
+        setGenres(genresResponse.genres);
+      } catch (error) {
+        console.error("Error fetching genres:", error);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   // Fetch trending movies on initial load
   useEffect(() => {
@@ -60,10 +80,10 @@ function Browse() {
         setInitialLoad(false);
       }
     };
-    if (initialLoad && !isSearching) {
+    if (initialLoad && !isSearching && !isFilteringByGenre) {
       fetchMovies();
     }
-  }, [initialLoad, isSearching]);
+  }, [initialLoad, isSearching, isFilteringByGenre]);
 
   // Fetch search results when searching
   useEffect(() => {
@@ -86,15 +106,45 @@ function Browse() {
       }
     };
 
-    if (isSearching && searchQuery.trim()) {
+    if (isSearching && searchQuery.trim() && !isFilteringByGenre) {
       fetchSearchResults();
     }
-  }, [searchQuery, currentPage, isSearching]);
+  }, [searchQuery, currentPage, isSearching, isFilteringByGenre]);
+
+  // Fetch movies by genre
+  useEffect(() => {
+    const fetchGenreMovies = async () => {
+      if (selectedGenre === null) {
+        setIsFilteringByGenre(false);
+        setGenreMovies([]);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const genreResponse = await tmdb.discoverMoviesByGenre(selectedGenre, currentPage);
+        const transformed = genreResponse.results.map(transformMovie);
+        setGenreMovies(transformed);
+        setTotalGenrePages(genreResponse.total_pages);
+        setIsFilteringByGenre(true);
+      } catch (error) {
+        console.error("Error fetching movies by genre:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (selectedGenre !== null) {
+      fetchGenreMovies();
+    }
+  }, [selectedGenre, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setIsSearching(true);
+      setIsFilteringByGenre(false);
+      setSelectedGenre(null);
       setCurrentPage(1); // Reset to first page on new search
     } else {
       setIsSearching(false);
@@ -109,6 +159,14 @@ function Browse() {
       setSearchResults([]);
       setCurrentPage(1);
     }
+  };
+
+  const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const genreId = e.target.value === "" ? null : parseInt(e.target.value);
+    setSelectedGenre(genreId);
+    setIsSearching(false);
+    setSearchQuery("");
+    setCurrentPage(1);
   };
 
   // Show full loading screen only on initial load
@@ -126,15 +184,16 @@ function Browse() {
   }
 
   // Determine which movies to display
-  const displayMovies = isSearching ? searchResults : trendingMovies;
-  
-  // Calculate pagination - for search, use API pagination; for trending, use client-side pagination
+  // Priority: genre filter > search > trending
   let totalPages: number;
   let currentMovies: MovieData[];
   
-  if (isSearching) {
+  if (isFilteringByGenre && selectedGenre !== null) {
+    totalPages = totalGenrePages;
+    currentMovies = genreMovies; // Genre results are already paginated by API
+  } else if (isSearching) {
     totalPages = totalSearchPages;
-    currentMovies = displayMovies; // Search results are already paginated by API
+    currentMovies = searchResults; // Search results are already paginated by API
   } else {
     totalPages = Math.ceil(trendingMovies.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -165,15 +224,18 @@ function Browse() {
           <label className="visually-hidden" htmlFor="genre">
             Genre
           </label>
-          <select id="genre" className="select" defaultValue="All Genres">
-            <option>{t("allGenres")}</option>
-            <option>{t("actionGenre")}</option>
-            <option>{t("adventure")}</option>
-            <option>{t("drama")}</option>
-            <option>{t("scifi")}</option>
-            <option>{t("animation")}</option>
-            <option>{t("comedy")}</option>
-            <option>{t("thriller")}</option>
+          <select 
+            id="genre" 
+            className="select" 
+            value={selectedGenre === null ? "" : selectedGenre.toString()}
+            onChange={handleGenreChange}
+          >
+            <option value="">{t("allGenres")}</option>
+            {genres.map((genre) => (
+              <option key={genre.id} value={genre.id.toString()}>
+                {genre.name}
+              </option>
+            ))}
           </select>
 
           <label className="visually-hidden" htmlFor="rating">
@@ -197,6 +259,10 @@ function Browse() {
         ) : currentMovies.length === 0 && isSearching ? (
           <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
             No movies found for "{searchQuery}"
+          </div>
+        ) : currentMovies.length === 0 && isFilteringByGenre ? (
+          <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
+            No movies found for this genre
           </div>
         ) : (
           <>
