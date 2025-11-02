@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './discussion.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
+import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions
 interface Thread {
@@ -21,6 +22,15 @@ interface NewThreadForm {
   movie: string;
   content: string;
   tags: string;
+}
+
+interface SelectedMovie {
+  id: number;
+  title: string;
+  year: number;
+  runtime: number;
+  poster: string;
+  tmdbId: number;
 }
 
 const initialThreads: Thread[] = [
@@ -69,6 +79,10 @@ function DiscussionPage(): React.ReactElement {
     content: '',
     tags: ''
   });
+  const [movieSearchQuery, setMovieSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   const toggleNewThreadForm = (): void => {
     setShowNewThreadForm(!showNewThreadForm);
@@ -79,6 +93,10 @@ function DiscussionPage(): React.ReactElement {
         content: '',
         tags: ''
       });
+      setMovieSearchQuery('');
+      setSearchResults([]);
+      setSelectedMovie(null);
+      setIsSearching(false);
     }
   };
 
@@ -101,10 +119,70 @@ function DiscussionPage(): React.ReactElement {
     }));
   };
 
+  // Search movies from TMDB API
+  useEffect(() => {
+    const searchMovies = async (): Promise<void> => {
+      if (!movieSearchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const response = await tmdb.searchMovies(movieSearchQuery.trim(), 1);
+        setSearchResults(response.results.slice(0, 5)); // Limit to 5 results
+      } catch (error) {
+        console.error('Error searching movies:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMovies, 500); // Debounce search
+    return () => clearTimeout(timeoutId);
+  }, [movieSearchQuery]);
+
+  // Handle movie selection from search results
+  const handleSelectMovie = async (movie: TmdbMovie): Promise<void> => {
+    try {
+      // Fetch full movie details to get runtime
+      const movieDetails = await tmdb.getMovieDetails(movie.id);
+      
+      const year = movieDetails.release_date 
+        ? new Date(movieDetails.release_date).getFullYear() 
+        : new Date().getFullYear();
+      
+      setSelectedMovie({
+        id: movieDetails.id,
+        title: movieDetails.title,
+        year: year,
+        runtime: movieDetails.runtime || 120,
+        poster: movieDetails.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
+          : "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image",
+        tmdbId: movieDetails.id
+      });
+      
+      setNewThread(prev => ({
+        ...prev,
+        movie: movieDetails.title
+      }));
+      
+      setMovieSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+      alert('Failed to load movie details. Please try again.');
+    }
+  };
+
   const createNewThread = (): void => {
-    const { title, movie, content, tags } = newThread;
+    const { title, content, tags } = newThread;
+    const movieTitle = selectedMovie ? selectedMovie.title : newThread.movie.trim();
     
-    if (!title.trim() || !movie.trim() || !content.trim()) {
+    if (!title.trim() || !movieTitle || !content.trim()) {
       alert('Please fill in all required fields (title, movie, and content)');
       return;
     }
@@ -112,7 +190,7 @@ function DiscussionPage(): React.ReactElement {
     const threadToAdd: Thread = {
       id: Date.now(),
       title: title.trim(),
-      movie: movie.trim(),
+      movie: movieTitle,
       author: "You",
       replies: 0,
       views: 1,
@@ -129,6 +207,9 @@ function DiscussionPage(): React.ReactElement {
       content: '',
       tags: ''
     });
+    setMovieSearchQuery('');
+    setSearchResults([]);
+    setSelectedMovie(null);
   };
 
   return (
@@ -191,12 +272,81 @@ function DiscussionPage(): React.ReactElement {
                 </div>
                 
                 <div className="form-group">
-                  <label>Movie *</label>
+                  <label>Search Movie from TMDB *</label>
+                  <input
+                    type="text"
+                    value={movieSearchQuery}
+                    onChange={(e) => setMovieSearchQuery(e.target.value)}
+                    placeholder="Search for a movie..."
+                    disabled={!!selectedMovie}
+                  />
+                  {isSearching && (
+                    <div className="search-status">
+                      Searching...
+                    </div>
+                  )}
+                  {!selectedMovie && searchResults.length > 0 && (
+                    <div className="movie-search-results">
+                      {searchResults.map((movie) => (
+                        <div
+                          key={movie.id}
+                          className="movie-search-result-item"
+                          onClick={() => handleSelectMovie(movie)}
+                        >
+                          {movie.poster_path && (
+                            <img
+                              src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                              alt={movie.title}
+                              className="movie-search-result-poster"
+                            />
+                          )}
+                          <div>
+                            <div className="movie-search-result-title">{movie.title}</div>
+                            {movie.release_date && (
+                              <div className="movie-search-result-year">
+                                {new Date(movie.release_date).getFullYear()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {selectedMovie && (
+                    <div className="movie-selected">
+                      <img
+                        src={selectedMovie.poster}
+                        alt={selectedMovie.title}
+                        className="movie-selected-poster"
+                      />
+                      <div className="movie-selected-info">
+                        <div className="movie-selected-title">{selectedMovie.title}</div>
+                        <div className="movie-selected-details">
+                          {selectedMovie.year} • {selectedMovie.runtime} min
+                        </div>
+                      </div>
+                      <button
+                        className="btn-clear-movie"
+                        onClick={() => {
+                          setSelectedMovie(null);
+                          setMovieSearchQuery('');
+                          setNewThread(prev => ({ ...prev, movie: '' }));
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="form-group">
+                  <label>Or Enter Movie Title Manually</label>
                   <input
                     type="text"
                     value={newThread.movie}
                     onChange={(e) => handleInputChange('movie', e.target.value)}
-                    placeholder="Enter movie name"
+                    placeholder="Enter movie title manually"
+                    disabled={!!selectedMovie}
                   />
                 </div>
 

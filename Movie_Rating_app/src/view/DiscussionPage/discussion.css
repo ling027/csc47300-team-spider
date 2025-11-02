@@ -407,6 +407,104 @@ h1 {
   font-size: 16px;
 }
 
+/* Movie search styles */
+.search-status {
+  margin-top: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.movie-search-results {
+  margin-top: 0.5rem;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #1e1e2f;
+}
+
+.movie-search-result-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.movie-search-result-item:hover {
+  background-color: #2b2b44;
+}
+
+.movie-search-result-item:last-child {
+  border-bottom: none;
+}
+
+.movie-search-result-poster {
+  width: 46px;
+  height: 69px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.movie-search-result-title {
+  font-weight: 500;
+  color: #fff;
+}
+
+.movie-search-result-year {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.movie-selected {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #2b2b44;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.movie-selected-poster {
+  width: 46px;
+  height: 69px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.movie-selected-info {
+  flex: 1;
+}
+
+.movie-selected-title {
+  font-weight: 500;
+  color: #fff;
+}
+
+.movie-selected-details {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.btn-clear-movie {
+  padding: 0.5rem 0.75rem;
+  background-color: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.btn-clear-movie:hover {
+  background-color: #b91c1c;
+}
+
 @media (max-width: 768px) {
   
   .main-content {
