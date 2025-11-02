@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar.jsx';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
+import { tmdb } from '../../api/tmbd.js';
 
 const initialListsData = [
   {
@@ -143,6 +144,12 @@ function WatchList() {
     review: ''
   });
   const [expandedReviews, setExpandedReviews] = useState(new Set());
+  
+  // Movie search state
+  const [movieSearchQuery, setMovieSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
@@ -182,6 +189,10 @@ function WatchList() {
         rating: 0,
         review: ''
       });
+      setMovieSearchQuery('');
+      setSearchResults([]);
+      setSelectedMovie(null);
+      setIsSearching(false);
     }
   };
 
@@ -211,18 +222,90 @@ function WatchList() {
     });
   };
 
+  // Search movies from TMDB API
+  useEffect(() => {
+    const searchMovies = async () => {
+      if (!movieSearchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const response = await tmdb.searchMovies(movieSearchQuery.trim(), 1);
+        setSearchResults(response.results.slice(0, 5)); // Limit to 5 results
+      } catch (error) {
+        console.error('Error searching movies:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchMovies, 500); // Debounce search
+    return () => clearTimeout(timeoutId);
+  }, [movieSearchQuery]);
+
+  // Handle movie selection from search results
+  const handleSelectMovie = async (movie) => {
+    try {
+      // Fetch full movie details to get runtime
+      const movieDetails = await tmdb.getMovieDetails(movie.id);
+      
+      const year = movieDetails.release_date 
+        ? new Date(movieDetails.release_date).getFullYear() 
+        : new Date().getFullYear();
+      
+      setSelectedMovie({
+        id: movieDetails.id,
+        title: movieDetails.title,
+        year: year,
+        runtime: movieDetails.runtime || 120,
+        poster: movieDetails.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
+          : "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image",
+        tmdbId: movieDetails.id
+      });
+      
+      setNewMovie(prev => ({
+        ...prev,
+        title: movieDetails.title
+      }));
+      
+      setMovieSearchQuery('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+      alert('Failed to load movie details. Please try again.');
+    }
+  };
+
   const addMovieToList = () => {
-    const { title, rating, review } = newMovie;
+    const { rating, review } = newMovie;
     
-    if (!title.trim() || rating === 0) {
-      alert('Please fill in all required fields (title and rating)');
+    if (!selectedMovie && !newMovie.title.trim()) {
+      alert('Please search and select a movie from the API, or enter a movie title');
+      return;
+    }
+    
+    if (rating === 0) {
+      alert('Please provide a rating');
       return;
     }
 
-    const movieToAdd = {
+    const movieToAdd = selectedMovie ? {
+      id: selectedMovie.tmdbId, // Use TMDB ID as the unique identifier
+      title: selectedMovie.title,
+      year: selectedMovie.year,
+      runtime: selectedMovie.runtime,
+      rating: rating,
+      review: review.trim(),
+      poster: selectedMovie.poster
+    } : {
       id: Date.now(),
-      title: title.trim(),
-      year: 2024,
+      title: newMovie.title.trim(),
+      year: new Date().getFullYear(),
       runtime: 120,
       rating: rating,
       review: review.trim(),
@@ -246,6 +329,9 @@ function WatchList() {
       rating: 0,
       review: ''
     });
+    setMovieSearchQuery('');
+    setSearchResults([]);
+    setSelectedMovie(null);
   };
 
   return (
@@ -344,13 +430,83 @@ function WatchList() {
                 {showAddMovieForm && (
                   <div className="add-movie-form">
                     <h3>Add New Movie</h3>
+                    
                     <div className="form-group">
-                      <label>Movie Title *</label>
+                      <label>Search Movie from TMDB *</label>
+                      <input
+                        type="text"
+                        value={movieSearchQuery}
+                        onChange={(e) => setMovieSearchQuery(e.target.value)}
+                        placeholder="Search for a movie..."
+                        disabled={!!selectedMovie}
+                      />
+                      {isSearching && (
+                        <div className="search-status">
+                          Searching...
+                        </div>
+                      )}
+                      {!selectedMovie && searchResults.length > 0 && (
+                        <div className="movie-search-results">
+                          {searchResults.map((movie) => (
+                            <div
+                              key={movie.id}
+                              className="movie-search-result-item"
+                              onClick={() => handleSelectMovie(movie)}
+                            >
+                              {movie.poster_path && (
+                                <img
+                                  src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                                  alt={movie.title}
+                                  className="movie-search-result-poster"
+                                />
+                              )}
+                              <div>
+                                <div className="movie-search-result-title">{movie.title}</div>
+                                {movie.release_date && (
+                                  <div className="movie-search-result-year">
+                                    {new Date(movie.release_date).getFullYear()}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {selectedMovie && (
+                        <div className="movie-selected">
+                          <img
+                            src={selectedMovie.poster}
+                            alt={selectedMovie.title}
+                            className="movie-selected-poster"
+                          />
+                          <div className="movie-selected-info">
+                            <div className="movie-selected-title">{selectedMovie.title}</div>
+                            <div className="movie-selected-details">
+                              {selectedMovie.year} • {selectedMovie.runtime} min
+                            </div>
+                          </div>
+                          <button
+                            className="btn-clear-movie"
+                            onClick={() => {
+                              setSelectedMovie(null);
+                              setMovieSearchQuery('');
+                              setNewMovie(prev => ({ ...prev, title: '' }));
+                            }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label>Or Enter Movie Title Manually</label>
                       <input
                         type="text"
                         value={newMovie.title}
                         onChange={(e) => handleMovieInputChange('title', e.target.value)}
-                        placeholder="Enter movie title"
+                        placeholder="Enter movie title manually"
+                        disabled={!!selectedMovie}
                       />
                     </div>
                     
