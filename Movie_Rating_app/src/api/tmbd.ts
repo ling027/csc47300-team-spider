@@ -9,6 +9,7 @@ export interface Movie {
     release_date: IsoDate;
     poster_path: string | null;
     vote_average: number;
+    genre_ids?: number[];
   }
 
   export interface Genre {
@@ -68,6 +69,10 @@ export interface Movie {
     total_results: number;
   }
 
+  export interface GenresResponse {
+    genres: Genre[];
+  }
+
   async function tmdbFetch<T>(
     path: string,
     params: Record<string, string | number> = {}
@@ -105,6 +110,17 @@ export interface Movie {
     },
 
     getMovieVideos: (id: number) =>
-      tmdbFetch<VideosResponse>(`/movie/${id}/videos`)
+      tmdbFetch<VideosResponse>(`/movie/${id}/videos`),
+
+    getGenres: () =>
+      tmdbFetch<GenresResponse>("/genre/movie/list"),
+
+    discoverMoviesByGenre: (genreId: number, page = 1, minRating?: number) => {
+      const params: Record<string, string | number> = { with_genres: genreId, page };
+      if (minRating !== undefined) {
+        params['vote_average.gte'] = minRating;
+      }
+      return tmdbFetch<PagedResponse<Movie>>("/discover/movie", params);
+    }
   };
 
