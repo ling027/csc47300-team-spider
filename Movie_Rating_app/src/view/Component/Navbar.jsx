@@ -16,7 +16,7 @@ function NavBar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/home");
   };
 
   return (
