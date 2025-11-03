@@ -1,4 +1,5 @@
 import "./comingsoon.css";
+import "../main.css";
 import { upcomingMovies } from "../MovieDetailPage/movies.js";
 import { Link } from "react-router-dom";
 import NavBar from "../Component/Navbar"
@@ -56,11 +57,14 @@ export default function ComingSoon() {
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
 
   return (
-    <>
-    <header className="site-header">
+    <div className="body">
+        <header className="site-header">
         <NavBar />
     </header>
-    <main className="cs-container">
+   
+    <div className="cs-container">
+  
+   
       <header className="cs-header">
         <h1>{t("comingSoon")}</h1>
         <p className="cs-subtitle">{t("discoverRate")}</p>
@@ -71,7 +75,8 @@ export default function ComingSoon() {
           <ComingSoonCard key={m.id} m={m} />
         ))}
       </section>
-    </main>
-    </>
+    
+    </div>
+     </div>
   );
 }

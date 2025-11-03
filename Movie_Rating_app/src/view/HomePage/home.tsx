@@ -198,7 +198,7 @@ function Home(){
           </div>
           </Link>
         )}
-      </section>
+        </section>
 
       
        <div className="categories">
