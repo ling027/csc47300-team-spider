@@ -28,12 +28,12 @@ function App() {
             <Route path="/coming-soon" element={<ComingSoon/>}/>
             <Route path="/login" element={<Login/>}/>
             <Route path="/signup" element={<SignUp/>}/>
-            <Route path="/watchlist" element={<WatchList/>} />
-            <Route path="/discussions" element={<DiscussionPage/>}/>
+            <Route path="/watchlist" element={<ProtectedRoute><WatchList/></ProtectedRoute>} />
+            <Route path="/discussions" element={<ProtectedRoute><DiscussionPage/></ProtectedRoute>}/>
             <Route path="/movie/:id/:title" element={<MovieDetailPage/>}/>
             <Route path="/ContactUs" element={<ContactUs/>}/>
             <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>
-            <Route path="/profile" element={<Profile/>}/>
+            <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>}/>
           </Routes>
         </Router>
   
