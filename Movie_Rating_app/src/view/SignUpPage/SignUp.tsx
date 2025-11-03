@@ -94,7 +94,7 @@ const SignUp: React.FC = () => {
       })
     );
 
-    setMessage("✅ Sign up successful! Redirecting...");
+    setMessage("Sign up successful! Redirecting...");
     setTimeout(() => navigate("/Login"), 1500);
   };
 

@@ -17,6 +17,7 @@ import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 import Profile from "./view/Profile/profile.tsx"
 import Landing from './view/LandingPage/landing.jsx';
 
+
 function App() {
   const [count, setCount] = useState(0)
 
