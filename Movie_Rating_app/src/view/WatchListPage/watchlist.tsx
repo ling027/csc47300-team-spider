@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './watchlist.css';
 import '../main.css';
-import NavBar from '../Component/Navbar.jsx';
+import NavBar from '../Component/Navbar';
 import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 

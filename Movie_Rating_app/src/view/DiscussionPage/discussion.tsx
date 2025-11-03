@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './discussion.css';
 import '../main.css';
-import NavBar from '../Component/Navbar.jsx';
+import NavBar from '../Component/Navbar';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions
