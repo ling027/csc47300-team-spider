@@ -7,6 +7,7 @@ import { MdMovieFilter, MdContactSupport } from "react-icons/md";
 import { FaRegBookmark } from "react-icons/fa";
 import { TbLogout2 } from 'react-icons/tb';
 import { FaUserLarge } from 'react-icons/fa6';
+import { TbLogin2 } from 'react-icons/tb';
 
 function NavBar() {
   const { lang, setLang, t } = useLang();
@@ -21,7 +22,7 @@ function NavBar() {
   return (
     <nav className="navbar">
       <div className="links">
-        <Link to="/" className="nav-link"><IoHomeOutline />{t("home")}</Link>
+        <Link to="/home" className="nav-link"><IoHomeOutline />{t("home")}</Link>
         <Link to="/browse" className="nav-link"> <IoSearchSharp />{t("browse")}</Link>
         <Link to="/coming-soon" className="nav-link"><MdMovieFilter />{t("comingSoon")}</Link>
 
@@ -37,7 +38,7 @@ function NavBar() {
           </>
         ) : (
           <Link to="/Login" className="nav-link">
-            Login
+            <TbLogin2/>Login
           </Link>
         )}
 

@@ -16,3 +16,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactEl
   return <>{children}</>;
 }
 
+export function SignedInProtection({ children }: ProtectedRouteProps): React.ReactElement {
+  const { isLoggedIn } = useAuth();
+
+  if (isLoggedIn) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+}
+

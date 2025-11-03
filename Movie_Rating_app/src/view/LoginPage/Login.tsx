@@ -42,8 +42,8 @@ const Login: React.FC = () => {
 
     if (isMatch) {
       login(savedUser); 
-      setMessage(`✅ Welcome back, ${savedUser.fullname || savedUser.username}!`);
-      setTimeout(() => navigate("/"), 1000);
+      setMessage(` Welcome back, ${savedUser.fullname || savedUser.username}!`);
+      setTimeout(() => navigate("/home"), 1000);
     } else {
       setMessage("Invalid username or password.");
     }
