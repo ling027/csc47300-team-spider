@@ -25,7 +25,7 @@
   border-radius: 16px;
   padding:8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  height:300px;
+  height:auto;
 }
 
 
@@ -71,6 +71,7 @@
 }
 
 .comment-items {
+  
   background-color: white;
   color: black;
   width:100%;

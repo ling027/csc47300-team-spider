@@ -97,6 +97,11 @@ function transformTMDBMovie(movieDetails: MovieDetails & { credits: Credits }, t
   };
 }
 
+interface CommentInterface{
+  id: number;
+  text: string;
+}
+
 function MDP({ source }: { source: any[] }) {
   const { id } = useParams<{ id: string }>();
   const numId = Number(id);
@@ -110,15 +115,30 @@ function MDP({ source }: { source: any[] }) {
   const [comments, setComments] = useState<{ id: number; text: string }[]>([]);
  
   useEffect(() => {
-    const saved = localStorage.getItem(`comments_${numId}`);
-    if (saved) {
-      setComments(JSON.parse(saved));
-    }
-  }, [numId]);
+  const saved: CommentInterface[] = JSON.parse(
+    localStorage.getItem(`comments_${numId}`) || "[]"
+  );
+  setComments(saved);
+}, [numId]);
 
-  useEffect(() => {
-    localStorage.setItem(`comments_${numId}`, JSON.stringify(comments));
-  }, [comments, numId]);
+const handleCommentSubmit = () => {
+  if (!isLoggedIn) {
+    alert("Please Sign in to submit comments!");
+    return;
+  }
+  if (!commentInput.trim()) return;
+
+  const newComment: CommentInterface = {
+    id: Date.now(),
+    text: commentInput.trim(),
+  };
+
+  const updatedComments = [...comments, newComment];
+  localStorage.setItem(`comments_${numId}`, JSON.stringify(updatedComments));
+  setComments(updatedComments);
+  setCommentInput("");
+};
+
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -170,21 +190,6 @@ function MDP({ source }: { source: any[] }) {
     if (id) fetchMovie();
   }, [id, source, lang]);
 
-  const handleCommentSubmit = () => {
-    if(!isLoggedIn) {
-      alert("Please Sign in to submit comments!");
-      return;
-    }
-    if (!commentInput.trim()) return; // prevent empty comments
-
-    const newComment = {
-      id: Date.now(),
-      text: commentInput.trim(),
-    };
-
-    setComments((prev) => [...prev, newComment]);
-    setCommentInput("");
-  };
 
   if (loading) {
     return (
@@ -238,15 +243,15 @@ function MDP({ source }: { source: any[] }) {
             </button>
           </section>
 
-          <section style={{width:"100%"}}>
+          <section style={{width:"100%",height:"100%"}}>
             {comments.length === 0 ? (
               <p style={{color: "black", marginTop: "100px", textAlign:"center"}}>Be the first one to comment on this movie!</p>
             ) : (
               comments.map((c) => (
                 <div key={c.id} className="comment-items">
                   <article className="comment-item">
-                    <h2><FaUserLarge/>{existingUser.username}</h2>
-                    <h3 className="user-handle">{existingUser.email}</h3> 
+                    <h2><FaUserLarge /> {existingUser?.username || "Guest"}</h2>
+                    <h3 className="user-handle">{existingUser?.email || ""}</h3>
                     <p className="comment-content">{c.text}</p>
                   </article>
                 </div>
