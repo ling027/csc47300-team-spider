@@ -5,6 +5,13 @@ import NavBar from '../Component/Navbar.jsx';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions
+interface Reply {
+  id: number;
+  author: string;
+  content: string;
+  timestamp: string;
+}
+
 interface Thread {
   id: number;
   title: string;
@@ -15,6 +22,7 @@ interface Thread {
   lastActivity: string;
   tags: string[];
   content: string;
+  replyList: Reply[];
 }
 
 interface NewThreadForm {
@@ -43,7 +51,8 @@ const initialThreads: Thread[] = [
     views: 156,
     lastActivity: "2 hours ago",
     tags: ["Christopher Nolan", "Sci-Fi", "Leonardo DiCaprio"],
-    content: "Just rewatched Inception and I'm still blown away by the complexity of the dream layers. What do you think about the ending - was Cobb still dreaming?"
+    content: "Just rewatched Inception and I'm still blown away by the complexity of the dream layers. What do you think about the ending - was Cobb still dreaming?",
+    replyList: []
   },
   {
     id: 2,
@@ -54,7 +63,8 @@ const initialThreads: Thread[] = [
     views: 89,
     lastActivity: "5 hours ago",
     tags: ["Multiverse", "Michelle Yeoh", "Philosophy"],
-    content: "The multiverse concept in EEAAO is fascinating. Do you think the hot dog fingers universe was the most creative one?"
+    content: "The multiverse concept in EEAAO is fascinating. Do you think the hot dog fingers universe was the most creative one?",
+    replyList: []
   },
   {
     id: 3,
@@ -65,7 +75,8 @@ const initialThreads: Thread[] = [
     views: 203,
     lastActivity: "1 day ago",
     tags: ["Marvel", "Spider-Man", "Predictions"],
-    content: "With the new Spider-Man movie coming in 2026, what do you think the story will focus on? Any theories about the villain?"
+    content: "With the new Spider-Man movie coming in 2026, what do you think the story will focus on? Any theories about the villain?",
+    replyList: []
   }
 ];
 
@@ -83,6 +94,8 @@ function DiscussionPage(): React.ReactElement {
   const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [replyingToThread, setReplyingToThread] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState<string>('');
 
   const toggleNewThreadForm = (): void => {
     setShowNewThreadForm(!showNewThreadForm);
@@ -196,7 +209,8 @@ function DiscussionPage(): React.ReactElement {
       views: 1,
       lastActivity: "Just now",
       tags: tags.trim() ? tags.split(',').map(tag => tag.trim()) : [],
-      content: content.trim()
+      content: content.trim(),
+      replyList: []
     };
 
     setThreads([threadToAdd, ...threads]);
@@ -210,6 +224,47 @@ function DiscussionPage(): React.ReactElement {
     setMovieSearchQuery('');
     setSearchResults([]);
     setSelectedMovie(null);
+  };
+
+  const handleReplyClick = (threadId: number): void => {
+    setReplyingToThread(threadId);
+    setReplyContent('');
+  };
+
+  const handleCancelReply = (): void => {
+    setReplyingToThread(null);
+    setReplyContent('');
+  };
+
+  const handleSubmitReply = (threadId: number): void => {
+    if (!replyContent.trim()) {
+      alert('Please enter a reply');
+      return;
+    }
+
+    const newReply: Reply = {
+      id: Date.now(),
+      author: 'You',
+      content: replyContent.trim(),
+      timestamp: 'Just now'
+    };
+
+    setThreads(prevThreads => 
+      prevThreads.map(thread => {
+        if (thread.id === threadId) {
+          return {
+            ...thread,
+            replies: thread.replies + 1,
+            lastActivity: 'Just now',
+            replyList: [...thread.replyList, newReply]
+          };
+        }
+        return thread;
+      })
+    );
+
+    setReplyingToThread(null);
+    setReplyContent('');
   };
 
   return (
@@ -437,11 +492,50 @@ function DiscussionPage(): React.ReactElement {
 
                     {expandedThreads.has(thread.id) && (
                       <div className="thread-expanded-content">
-                        <div className="thread-actions">
-                          <button className="btn-reply">Reply</button>
-                          <button className="btn-like">👍 Like</button>
-                          <button className="btn-share">Share</button>
-                        </div>
+                        {/* Display existing replies */}
+                        {thread.replyList.length > 0 && (
+                          <div className="replies-list">
+                            <h4 className="replies-header">Replies ({thread.replyList.length})</h4>
+                            {thread.replyList.map(reply => (
+                              <div key={reply.id} className="reply-item">
+                                <div className="reply-header">
+                                  <span className="reply-author">{reply.author}</span>
+                                  <span className="reply-timestamp">{reply.timestamp}</span>
+                                </div>
+                                <div className="reply-content">{reply.content}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reply form */}
+                        {replyingToThread === thread.id ? (
+                          <div className="reply-form">
+                            <textarea
+                              className="reply-textarea"
+                              value={replyContent}
+                              onChange={(e) => setReplyContent(e.target.value)}
+                              placeholder="Write your reply..."
+                              rows={3}
+                            />
+                            <div className="reply-actions">
+                              <button className="btn-cancel" onClick={handleCancelReply}>
+                                Cancel
+                              </button>
+                              <button className="btn-submit" onClick={() => handleSubmitReply(thread.id)}>
+                                Submit Reply
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="thread-actions">
+                            <button className="btn-reply" onClick={() => handleReplyClick(thread.id)}>
+                              Reply
+                            </button>
+                            <button className="btn-like">👍 Like</button>
+                            <button className="btn-share">Share</button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
