@@ -1,5 +1,5 @@
 import "./pagination.css";
-import React from "react";
+import React, { useState } from "react";
 
 interface PaginationProps {
   currentPage: number;
@@ -12,21 +12,64 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
-  const pages = [];
+  const [jumpPage, setJumpPage] = useState<number | "">("");
 
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(
+  const handlePrev = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
+  };
+
+  const handleJump = () => {
+    if (jumpPage !== "" && jumpPage >= 1 && jumpPage <= totalPages) {
+      onPageChange(jumpPage);
+      setJumpPage("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleJump();
+  };
+
+  return (
+    <div className="pagination">
       <button
-        key={i}
-        onClick={() => onPageChange(i)}
-        className={`page-btn ${currentPage === i ? "active" : ""}`}
+        className="page-arrow"
+        onClick={handlePrev}
+        disabled={currentPage === 1}
       >
-        {i}
+        &#8592; {/* Left arrow */}
       </button>
-    );
-  }
 
-  return <div className="pagination">{pages}</div>;
+      <span className="page-current">
+        {currentPage} / {totalPages}
+      </span>
+
+      <button
+        className="page-arrow"
+        onClick={handleNext}
+        disabled={currentPage === totalPages}
+      >
+        &#8594; {/* Right arrow */}
+      </button>
+
+      {/* Jump to page */}
+      <div className="page-jump">
+        <input
+          type="number"
+          min={1}
+          max={totalPages}
+          placeholder="Page"
+          value={jumpPage}
+          onChange={(e) => setJumpPage(Number(e.target.value))}
+          onKeyDown={handleKeyDown}
+        />
+        <button onClick={handleJump}>Go</button>
+      </div>
+    </div>
+  );
 };
 
 export default Pagination;

@@ -316,7 +316,7 @@ function Browse() {
             </div>
 
             {totalPages > 1 && (
-              <Pagination
+              <Pagination 
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
