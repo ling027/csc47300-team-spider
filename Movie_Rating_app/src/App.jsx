@@ -14,7 +14,7 @@ import ComingSoon from "./view/ComingSoonPage/ComingSoon.jsx"
 import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
 import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
-import Profile from "./view/Profile/profile.jsx"
+import Profile from "./view/Profile/profile.tsx"
 import Landing from './view/LandingPage/landing.jsx';
 
 function App() {

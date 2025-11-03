@@ -177,6 +177,17 @@
   color: #f5c518;
 }
 
+.remove-button {
+  background-color: mediumspringgreen;
+  border: none;
+  color: black;
+  font-family: 'Times New Roman', Times, serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 10px;
+}
+
 .activity-section {
   margin-top: 40px;
   background: #2b2b44;

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { movies, upcomingMovies } from "./movies.js";
-import MovieDetailCard from "../Component/MovieDetailCard/MovieDetail.jsx";
+import MovieDetailCard from "../Component/MovieDetailCard/MovieDetail";
 import "./MovieDetailPage.css";
 import { useLang } from "../../i18n/LanguageContext.jsx";
 import { tmdb } from "../../api/tmbd";
@@ -108,7 +108,7 @@ function MDP({ source }: { source: any[] }) {
   const existingUser = JSON.parse(localStorage.getItem("user") || "null");
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState<{ id: number; text: string }[]>([]);
-
+ 
   useEffect(() => {
     const saved = localStorage.getItem(`comments_${numId}`);
     if (saved) {
