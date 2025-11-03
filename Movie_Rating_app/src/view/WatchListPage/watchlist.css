@@ -5,6 +5,7 @@
 }
 
 .watchlist-body-wrapper {
+  width:100%;
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #1e1e2f, #3a3a5c);
   color: #f8fafc;
@@ -172,6 +173,7 @@ h1 {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-bottom: 24px;
+
 }
 
 .stat-card {

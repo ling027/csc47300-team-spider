@@ -115,8 +115,7 @@ function MDP({ source }: { source: any[] }) {
   const [comments, setComments] = useState<{ id: number; text: string }[]>([]);
  
   useEffect(() => {
-  const saved: CommentInterface[] = JSON.parse(
-    localStorage.getItem(`comments_${numId}`) || "[]"
+  const saved: CommentInterface[] = JSON.parse(localStorage.getItem(`comments_${numId}`) || "[]"
   );
   setComments(saved);
 }, [numId]);

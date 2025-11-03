@@ -10,6 +10,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactEl
   const { isLoggedIn } = useAuth();
 
   if (!isLoggedIn) {
+    alert("You must be logged in to access this page.");
     return <Navigate to="/login" replace />;
   }
 
@@ -20,6 +21,7 @@ export function SignedInProtection({ children }: ProtectedRouteProps): React.Rea
   const { isLoggedIn } = useAuth();
 
   if (isLoggedIn) {
+    alert("You are already logged in.");
     return <Navigate to="/home" replace />;
   }
 
