@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar';
-import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
+import { movies, upcomingMovies } from '../MovieDetailPage/movies';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions

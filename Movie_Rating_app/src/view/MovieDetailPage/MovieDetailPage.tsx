@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { movies, upcomingMovies } from "./movies.js";
+import { movies, upcomingMovies } from "./movies";
 import MovieDetailCard from "../Component/MovieDetailCard/MovieDetail";
 import "./MovieDetailPage.css";
 import { useLang } from "../../i18n/LanguageContext.jsx";
