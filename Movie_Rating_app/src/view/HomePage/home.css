@@ -40,6 +40,8 @@
   width:888px;
   height:500px;
   border-radius: 16px;
+  overflow: hidden;
+  border: none;
 }
 
 .hero-info {
