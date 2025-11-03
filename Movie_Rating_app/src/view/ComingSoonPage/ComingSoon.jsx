@@ -2,7 +2,7 @@ import "./comingsoon.css";
 import "../main.css";
 import { upcomingMovies } from "../MovieDetailPage/movies.js";
 import { Link } from "react-router-dom";
-import NavBar from "../Component/Navbar.jsx"
+import NavBar from "../Component/Navbar"
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import { useFormatters } from "../../utils/formatHelpers.js";
 

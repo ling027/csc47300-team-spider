@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./ContactUs.css";
 import "../main.css"
-import NavBar from "../Component/Navbar.jsx"
+import NavBar from "../Component/Navbar"
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
 
