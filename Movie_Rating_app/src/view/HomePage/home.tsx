@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import "../main.css"
+import "./home.css"
 import "../Component/MovieDetailCard/MovieDetailCard.css"
-import NavBar from "../Component/Navbar.jsx"
+import NavBar from "../Component/Navbar"
 import {Link} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import MovRow from "../Component/MovieRow.jsx"
 import { tmdb } from '../../api/tmbd';
 import type { Movie } from '../../api/tmbd';
 import { movies } from "../MovieDetailPage/movies.js";
+import EEAAOT from "../../assets/EEAAO.mp4"
+import type { MovieDetails, Credits, Video } from "../../api/tmbd";
+
+
 // Transform TMDB Movie to match the format expected by MovieRow
 interface MovieData {
   id: number;
@@ -46,7 +51,7 @@ function Home(){
   const [trendingMovies, setTrendingMovies] = useState<MovieData[]>([]);
   const [upcomingMovies, setUpcomingMovies] = useState<MovieData[]>([]);
   const [loading, setLoading] = useState(true);
-  const EEAAO = movies.find((m) => m.id === 2);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -95,6 +100,18 @@ function Home(){
     fetchMovies();
   }, []);
 
+  useEffect(() => {
+    if (!trendingMovies.length) return;
+
+    const interval = setInterval(() => {
+      setCurrentHeroIndex(prev => (prev + 1) % trendingMovies.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [trendingMovies]);
+
+  const currentHero = trendingMovies[currentHeroIndex];
+
 
   return(
     <div className="body">
@@ -103,18 +120,45 @@ function Home(){
       </header>
 
       <main className="container">
-        <section className="welcome-container">
-          <Link to={ `/movie/${EEAAO?.id}/${EEAAO?.title}`}>
-            <section className="promoted-container">
-              <img src={EEAAO?.poster} className="PromotedPoster"/>
-              <video src={EEAAO?.trailer} muted autoPlay loop className="PromotedTrailer"></video>
-            </section>
+        <section className="hero-carousel">
+          {currentHero && (
+            <Link to={`/movie/${currentHero.id}/${currentHero.title}`}>
+            <div className="hero-slide-split">
+              {/* Left: Poster */}
+            <div className="hero-left">
+              <img src={currentHero.poster} className="hero-poster" />
+            <div className="hero-info">
+              <h2>{currentHero.title}</h2>
+              <p>{currentHero.rating}</p>
+            </div>
+          </div>
+
+          {/* Right: Trailer */}
+          <div className="hero-right"> 
+             <video className="hero-trailer" autoPlay loop muted>
+              <source src={EEAAOT} type="video/mp4" />
+            </video>      
+          </div>
+
+            {/* Arrows */}
+          <button className="arrow left" onClick={(e) => { e.preventDefault(); setCurrentHeroIndex((currentHeroIndex - 1 + trendingMovies.length) % trendingMovies.length); }}>
+            &#10094;
+          </button>
+          <button className="arrow right" onClick={(e) => { e.preventDefault(); setCurrentHeroIndex((currentHeroIndex + 1) % trendingMovies.length); }}>
+            &#10095;
+          </button>
+          </div>
           </Link>
-        </section>
+        )}
+      </section>
+
+      
+       <div className="categories">
         
         <MovRow rowslogan={t("discoverRate")} link_addon="" movD={trendingMovies}/>
 
         <MovRow rowslogan={t("comingSoonSection")} link_addon="coming-soon/" movD={upcomingMovies}/>
+      </div>
 
       </main>
     </div>

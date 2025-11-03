@@ -2,26 +2,13 @@ import "./profile.css";
 import "../main.css";
 import NavBar from "../Component/Navbar.jsx";
 import { useLang } from "../../i18n/LanguageContext.jsx";
-import { useAuth } from "../../context/AuthContext";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 function Profile() {
   const { t } = useLang();
-  const { user: authUser, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-
   const [user] = useState({
-    username: authUser?.username || "MovieFan123",
-    email: authUser?.email || "moviefan@example.com",
-    fullName: authUser?.fullName || "Movie Fan",
+    username: "Test",
+    email: "Test@gmail.com",
     joined: "March 2024",
     avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
     stats: {
@@ -31,11 +18,7 @@ function Profile() {
     },
     favorites:[
         { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
-        { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
-        { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
-        { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
-        { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
-        { title: "The Shawshank Redemption", poster: "https://m.media-amazon.com/images/I/51zUbui+gbL._AC_.jpg", rating: 9.0 },
+      
         
     ]
   });
@@ -209,23 +192,7 @@ function Profile() {
               <p className="stat-value">{user.stats.avgRating}</p>
             </div>
           </aside>
-            <aside className="profile-stats">
-            <h3>{t("Your Stats")}</h3>
-            <div className="stat-box">
-              <p className="stat-label">{t("Minutes Watched")}</p>
-              <p className="stat-value">
-                {user.stats.minutesWatched.toLocaleString()}
-              </p>
-            </div>
-            <div className="stat-box">
-              <p className="stat-label">{t("Movies Watched")}</p>
-              <p className="stat-value">{user.stats.moviesWatched}</p>
-            </div>
-            <div className="stat-box">
-              <p className="stat-label">{t("Average Rating Given")}</p>
-              <p className="stat-value">{user.stats.avgRating}</p>
-            </div>
-          </aside>
+            
         </div>
 
         </div>

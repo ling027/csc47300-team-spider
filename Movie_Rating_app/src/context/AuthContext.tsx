@@ -1,83 +1,48 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-
-interface User {
-  username: string;
-  email: string;
-  fullName: string;
-}
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 interface AuthContextType {
-  user: User | null;
-  login: (username: string, password: string) => boolean;
+  isLoggedIn: boolean;
+  user: any;
+  login: (userData: any) => void;
   logout: () => void;
-  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Dummy account
-const DUMMY_ACCOUNT = {
-  username: 'demo',
-  password: 'demo123',
-  email: 'demo@example.com',
-  fullName: 'Demo User'
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
+    localStorage.getItem("isLoggedIn") === "true"
+  );
+  const [user, setUser] = useState<any>(JSON.parse(localStorage.getItem("user") || "null"));
+
+  // Persist changes
+  useEffect(() => {
+    localStorage.setItem("isLoggedIn", String(isLoggedIn));
+  }, [isLoggedIn]);
+
+  const login = (userData: any) => {
+    setUser(userData);
+    setIsLoggedIn(true);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
+  const logout = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("isLoggedIn");
+  };
+
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Check localStorage for persisted user
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        return JSON.parse(savedUser);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
-
-  useEffect(() => {
-    // Persist user to localStorage when it changes
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('user');
-    }
-  }, [user]);
-
-  const login = (username: string, password: string): boolean => {
-    if (username.toLowerCase() === DUMMY_ACCOUNT.username.toLowerCase() && password === DUMMY_ACCOUNT.password) {
-      const userData: User = {
-        username: DUMMY_ACCOUNT.username,
-        email: DUMMY_ACCOUNT.email,
-        fullName: DUMMY_ACCOUNT.fullName
-      };
-      setUser(userData);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = (): void => {
-    setUser(null);
-  };
-
-  const value: AuthContextType = {
-    user,
-    login,
-    logout,
-    isAuthenticated: !!user
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
+// Custom hook for easy use
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used inside an AuthProvider");
   return context;
-}
-
+};
