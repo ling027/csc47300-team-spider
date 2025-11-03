@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "../main.css"
 import {Link, useNavigate} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
@@ -9,58 +10,121 @@ import { FaRegBookmark } from "react-icons/fa";
 import { IoLogInOutline } from "react-icons/io5";
 import { IoLogOutOutline } from "react-icons/io5";
 import { MdContactSupport } from "react-icons/md";
+import { HiMenu, HiX } from "react-icons/hi";
 
 
 function NavBar() {
     const { lang,setLang, t } = useLang();
     const { isAuthenticated, user, logout } = useAuth();
     const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/');
+        setIsOpen(false);
     };
-    return (
-        <nav className="navbar">
-        <nav className="links">
-            <Link to="/" className="nav-link"><IoHomeOutline />{ t("home")}</Link>
-            <Link to="/browse" className="nav-link"><IoSearchSharp/>{t("browse")}</Link>
-            <Link to="/coming-soon" className="nav-link"><MdMovieFilter/>{t("comingSoon")}</Link>
-            {isAuthenticated && (
-              <>
-                <Link to="/watchlist" className="nav-link"> <FaRegBookmark/>{t("watchlist")}</Link>
-                <Link to="/discussions" className="nav-link">💬 Discussions</Link>
-              </>
-            )}
-            {isAuthenticated ? (
-                <>
-                    <Link to="/profile" className="nav-link"><MdContactSupport/>Profile</Link>
-                    <button onClick={handleLogout} className="nav-link">
-                        <IoLogOutOutline/>Logout
-                    </button>
-                </>
-            ) : (
-                <Link to="/login" className="nav-link"><IoLogInOutline/>{t("login")}</Link>
-            )}
-            <Link to="/contactus" className="nav-link"><MdContactSupport/>{t("contact")}</Link>
-        </nav>
 
-            <div className="nav-right">
-                <label className="lang-label" htmlFor="lang-select" aria-label="language">
-                🌐
-                </label>
-                <select
-                    id="lang-select"
-                    className="lang-select"
-                    value={lang}
-                    onChange={(e) => setLang(e.target.value)}
-                >
-                    <option value="en">🇺🇸 English</option>
-                    <option value="es">🇪🇸 Spanish</option>
-                    <option value="el">🇬🇷 Greek</option>
-                </select>
-            </div>
-        </nav>
+    const handleLinkClick = () => {
+        setIsOpen(false);
+    };
+
+    return (
+        <>
+            {/* Hamburger menu button */}
+            <button 
+                className="menu-toggle"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Toggle menu"
+            >
+                {isOpen ? <HiX /> : <HiMenu />}
+            </button>
+
+            {/* Overlay when menu is open */}
+            {isOpen && (
+                <div 
+                    className="nav-overlay" 
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            {/* Sidebar navigation */}
+            <nav className={`sidebar-nav ${isOpen ? 'open' : ''}`}>
+                <div className="nav-header">
+                    
+                    <button 
+                        className="close-btn"
+                        onClick={() => setIsOpen(false)}
+                        aria-label="Close menu"
+                    >
+                        <HiX />
+                    </button>
+                </div>
+
+                <nav className="nav-links">
+                    <Link to="/home" className="nav-link" onClick={handleLinkClick}>
+                        <IoHomeOutline />
+                        <span>{t("home")}</span>
+                    </Link>
+                    <Link to="/browse" className="nav-link" onClick={handleLinkClick}>
+                        <IoSearchSharp/>
+                        <span>{t("browse")}</span>
+                    </Link>
+                    <Link to="/coming-soon" className="nav-link" onClick={handleLinkClick}>
+                        <MdMovieFilter/>
+                        <span>{t("comingSoon")}</span>
+                    </Link>
+                    {isAuthenticated && (
+                      <>
+                        <Link to="/watchlist" className="nav-link" onClick={handleLinkClick}>
+                            <FaRegBookmark/>
+                            <span>{t("watchlist")}</span>
+                        </Link>
+                        <Link to="/discussions" className="nav-link" onClick={handleLinkClick}>
+                            💬 <span>Discussions</span>
+                        </Link>
+                      </>
+                    )}
+                    {isAuthenticated ? (
+                        <>
+                            <Link to="/profile" className="nav-link" onClick={handleLinkClick}>
+                                <MdContactSupport/>
+                                <span>Profile</span>
+                            </Link>
+                            <button onClick={handleLogout} className="nav-link">
+                                <IoLogOutOutline/>
+                                <span>Logout</span>
+                            </button>
+                        </>
+                    ) : (
+                        <Link to="/login" className="nav-link" onClick={handleLinkClick}>
+                            <IoLogInOutline/>
+                            <span>{t("login")}</span>
+                        </Link>
+                    )}
+                    <Link to="/contactus" className="nav-link" onClick={handleLinkClick}>
+                        <MdContactSupport/>
+                        <span>{t("contact")}</span>
+                    </Link>
+                </nav>
+
+                <div className="nav-footer">
+                    <label className="lang-label" htmlFor="lang-select" aria-label="language">
+                        🌐
+                    </label>
+                    <select
+                        id="lang-select"
+                        className="lang-select"
+                        value={lang}
+                        onChange={(e) => setLang(e.target.value)}
+                    >
+                        <option value="en">🇺🇸 English</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="el">🇬🇷 Greek</option>
+                    </select>
+                </div>
+            </nav>
+        </>
     );
 }
 export default NavBar;

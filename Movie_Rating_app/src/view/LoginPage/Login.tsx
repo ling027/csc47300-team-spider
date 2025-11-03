@@ -1,6 +1,5 @@
 import "../main.css";
 import "./Login.css";
-import NavBar from "../Component/Navbar.jsx";
 import { Link, useNavigate } from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx";
 import { useAuth } from "../../context/AuthContext";
@@ -26,7 +25,7 @@ function Login(): React.ReactElement {
     const success = login(username.trim(), password);
     
     if (success) {
-      navigate('/');
+      navigate('/home');
     } else {
       setError('Invalid username or password');
     }
@@ -36,10 +35,6 @@ function Login(): React.ReactElement {
 
   return (
     <div className="body">     
-      <header className="site-header">
-        <NavBar/>
-      </header>
-
       <main className="login-page">
         <div className="login-container">
           <h1>{t("login")}</h1>

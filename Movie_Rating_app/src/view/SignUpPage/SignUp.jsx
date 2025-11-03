@@ -1,6 +1,5 @@
 import "../main.css"
 import "./Signup.css"
-import NavBar from "../Component/Navbar.jsx"
 import {Link} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
@@ -9,10 +8,6 @@ function SignUp(){
 
     return(
         <div className="body">
-             
-        <section class="site-header">
-            <NavBar/>
-        </section>
 
         <main class="signup-page">
             <div class="signup-container" >
