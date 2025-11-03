@@ -6,6 +6,8 @@ import "./MovieDetailPage.css";
 import { useLang } from "../../i18n/LanguageContext.jsx";
 import { tmdb } from "../../api/tmbd";
 import type { MovieDetails, Credits, Video } from "../../api/tmbd";
+import {useAuth} from "../../context/AuthContext";
+import { FaUserLarge } from 'react-icons/fa6';
 
 function formatDate(lang: string, iso: string): string {
   if (!iso) return "";
@@ -102,42 +104,56 @@ function MDP({ source }: { source: any[] }) {
   const [movie, setMovie] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isLoggedIn } = useAuth();
+  const existingUser = JSON.parse(localStorage.getItem("user") || "null");
+  const [commentInput, setCommentInput] = useState("");
+  const [comments, setComments] = useState<{ id: number; text: string }[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`comments_${numId}`);
+    if (saved) {
+      setComments(JSON.parse(saved));
+    }
+  }, [numId]);
+
+  useEffect(() => {
+    localStorage.setItem(`comments_${numId}`, JSON.stringify(comments));
+  }, [comments, numId]);
 
   useEffect(() => {
     const fetchMovie = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // First check if it's in the static data
+
         const staticMovie = source.find((m) => m.id === numId);
-        
+
         if (staticMovie) {
           setMovie(staticMovie);
           setLoading(false);
           return;
         }
-        
-        // If not found in static data, fetch from TMDB
-        // Only try TMDB if ID seems like a TMDB ID (typically > 10)
+
         if (numId > 10) {
-          // Fetch movie details and videos in parallel
           const [movieDetails, videosResponse] = await Promise.all([
             tmdb.getMovieDetails(numId),
-            tmdb.getMovieVideos(numId).catch(() => null) // Don't fail if videos fail to load
+            tmdb.getMovieVideos(numId).catch(() => null),
           ]);
-          
-          // Extract trailer from videos (prefer official trailer, then first trailer)
+
           let trailerUrl: string | null = null;
           if (videosResponse) {
-            const trailers = videosResponse.results.filter(v => v.type === "Trailer" && v.site === "YouTube");
-            const officialTrailer = trailers.find(v => v.name.toLowerCase().includes("official"));
+            const trailers = videosResponse.results.filter(
+              (v) => v.type === "Trailer" && v.site === "YouTube"
+            );
+            const officialTrailer = trailers.find((v) =>
+              v.name.toLowerCase().includes("official")
+            );
             const trailer = officialTrailer || trailers[0];
             if (trailer) {
               trailerUrl = getTrailerUrl(trailer);
             }
           }
-          
+
           const transformed = transformTMDBMovie(movieDetails, trailerUrl, lang);
           setMovie(transformed);
         } else {
@@ -151,17 +167,29 @@ function MDP({ source }: { source: any[] }) {
       }
     };
 
-    if (id) {
-      fetchMovie();
-    }
+    if (id) fetchMovie();
   }, [id, source, lang]);
+
+  const handleCommentSubmit = () => {
+    if(!isLoggedIn) {
+      alert("Please Sign in to submit comments!");
+      return;
+    }
+    if (!commentInput.trim()) return; // prevent empty comments
+
+    const newComment = {
+      id: Date.now(),
+      text: commentInput.trim(),
+    };
+
+    setComments((prev) => [...prev, newComment]);
+    setCommentInput("");
+  };
 
   if (loading) {
     return (
       <main className="container">
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          Loading...
-        </div>
+        <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
       </main>
     );
   }
@@ -178,7 +206,7 @@ function MDP({ source }: { source: any[] }) {
 
   return (
     <div className="Movie-datail-container">
-      <div style={{ width: '100%' }}>
+      <div style={{ width: "100%" }}>
         <MovieDetailCard
           title={movie.title}
           poster={movie.poster}
@@ -201,17 +229,36 @@ function MDP({ source }: { source: any[] }) {
               placeholder={t("giveUsYourThoughts")}
               className="comment"
               required
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCommentSubmit()}
             />
-            <button className="comment-btn" type="submit">
+            <button className="comment-btn" type="button" onClick={handleCommentSubmit}>
               {t("submit")}
             </button>
           </section>
-          <section className="comments"></section>
+
+          <section style={{width:"100%"}}>
+            {comments.length === 0 ? (
+              <p style={{color: "black", marginTop: "100px", textAlign:"center"}}>Be the first one to comment on this movie!</p>
+            ) : (
+              comments.map((c) => (
+                <div key={c.id} className="comment-items">
+                  <article className="comment-item">
+                    <h2><FaUserLarge/>{existingUser.username}</h2>
+                    <h3 className="user-handle">{existingUser.email}</h3> 
+                    <p className="comment-content">{c.text}</p>
+                  </article>
+                </div>
+              ))
+            )}
+          </section>
         </section>
       </div>
     </div>
   );
 }
+
 
 export const MovieDetailPage = () => <MDP source={movies} />;
 export const UCMoiveDetailPage = () => <MDP source={upcomingMovies} />;
