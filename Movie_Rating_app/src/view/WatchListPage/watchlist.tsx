@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './watchlist.css';
 import '../main.css';
-import NavBar from '../Component/Navbar.jsx';
-import { movies, upcomingMovies } from '../MovieDetailPage/movies.js';
+import NavBar from '../Component/Navbar';
+import MinimalNavbar from '../Component/MinimalNavbar';
+import { movies, upcomingMovies } from '../MovieDetailPage/movies';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions
@@ -380,7 +381,9 @@ function WatchList(): React.ReactElement {
       <header className="site-header">
         <NavBar/>
       </header>
-      
+
+      <MinimalNavbar />
+
       <div className="container">
         <header>
           <h1>Your Watchlists</h1>

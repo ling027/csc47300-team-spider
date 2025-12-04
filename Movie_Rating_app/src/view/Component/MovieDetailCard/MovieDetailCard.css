@@ -101,5 +101,21 @@
   }
 }
 
+.favorite-button{
+  background: none;
+  color:white;
+  right:10px;
+  font-size: 40px;
+  border: none;
+}
 
+.favorite-button:hover {
+  color: yellow;
+  cursor: pointer;
+}
+
+.favorite-button:focus {
+  outline: none;
+ 
+}
 

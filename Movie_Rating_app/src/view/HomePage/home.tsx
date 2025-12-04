@@ -1,13 +1,25 @@
 import { useState, useEffect } from 'react';
 import "../main.css"
+import "./home.css"
 import "../Component/MovieDetailCard/MovieDetailCard.css"
-import NavBar from "../Component/Navbar.jsx"
+import NavBar from "../Component/Navbar"
+import MinimalNavbar from "../Component/MinimalNavbar"
 import {Link} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import MovRow from "../Component/MovieRow.jsx"
 import { tmdb } from '../../api/tmbd';
-import type { Movie } from '../../api/tmbd';
-import { movies } from "../MovieDetailPage/movies.js";
+import type { Movie, Video } from '../../api/tmbd';
+import EEAAOT from "../../assets/EEAAO.mp4"
+
+// Get trailer URL from TMDB video key
+function getTrailerUrl(trailer: Video): string | null {
+  if (!trailer || trailer.site !== "YouTube") return null;
+  
+  // Return YouTube embed URL for autoplay, mute, and loop
+  return `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&loop=1&playlist=${trailer.key}`;
+}
+
+
 // Transform TMDB Movie to match the format expected by MovieRow
 interface MovieData {
   id: number;
@@ -46,7 +58,7 @@ function Home(){
   const [trendingMovies, setTrendingMovies] = useState<MovieData[]>([]);
   const [upcomingMovies, setUpcomingMovies] = useState<MovieData[]>([]);
   const [loading, setLoading] = useState(true);
-  const EEAAO = movies.find((m) => m.id === 2);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -65,8 +77,36 @@ function Home(){
         ]);
        
 
-        // Process trending movies
-        const transformedTrending = trendingResponse.results.map(transformMovie);
+        // Process trending movies with trailers
+        const transformedTrending = await Promise.all(
+          trendingResponse.results.map(async (movie) => {
+            const transformed = transformMovie(movie);
+            
+            // Fetch trailer for the movie
+            try {
+              const videosResponse = await tmdb.getMovieVideos(movie.id);
+              if (videosResponse) {
+                const trailers = videosResponse.results.filter(
+                  (v) => v.type === "Trailer" && v.site === "YouTube"
+                );
+                const officialTrailer = trailers.find((v) =>
+                  v.name.toLowerCase().includes("official")
+                );
+                const trailer = officialTrailer || trailers[0];
+                if (trailer) {
+                  const trailerUrl = getTrailerUrl(trailer);
+                  if (trailerUrl) {
+                    transformed.trailer = trailerUrl;
+                  }
+                }
+              }
+            } catch (error) {
+              console.error(`Error fetching trailer for movie ${movie.id}:`, error);
+            }
+            
+            return transformed;
+          })
+        );
         setTrendingMovies(transformedTrending);
         
         // Combine all upcoming movie results into one big array
@@ -77,7 +117,6 @@ function Home(){
         ];
 
         // Process upcoming movies (with the combined list)
-
         const transformedUpcoming = allUpcomingResults
           .map(transformMovie)
           .filter(movie => isUnreleased(movie.releaseDate));
@@ -95,26 +134,82 @@ function Home(){
     fetchMovies();
   }, []);
 
+  useEffect(() => {
+    if (!trendingMovies.length) return;
+
+    const interval = setInterval(() => {
+      setCurrentHeroIndex(prev => (prev + 1) % trendingMovies.length);
+    }, 12000);
+
+    return () => clearInterval(interval);
+  }, [trendingMovies]);
+
+  const currentHero = trendingMovies[currentHeroIndex];
+
 
   return(
     <div className="body">
       <header className="site-header">
         <NavBar/>
       </header>
+      
+      <MinimalNavbar />
 
       <main className="container">
-        <section className="welcome-container">
-          <Link to={ `/movie/${EEAAO?.id}/${EEAAO?.title}`}>
-            <section className="promoted-container">
-              <img src={EEAAO?.poster} className="PromotedPoster"/>
-              <video src={EEAAO?.trailer} muted autoPlay loop className="PromotedTrailer"></video>
-            </section>
+        <section className="hero-carousel">
+          {currentHero && (
+            <Link to={`/movie/${currentHero.id}/${currentHero.title}`}>
+            <div className="hero-slide-split">
+              {/* Left: Poster */}
+            <div className="hero-left">
+              <img src={currentHero.poster} className="hero-poster" />
+            <div className="hero-info">
+              <h2>{currentHero.title}</h2>
+              <p>{currentHero.rating}</p>
+            </div>
+          </div>
+
+          {/* Right: Trailer */}
+          <div className="hero-right"> 
+             {currentHero.trailer && currentHero.trailer.startsWith("https://www.youtube.com/embed/") ? (
+               <iframe
+                 className="hero-trailer"
+                 src={currentHero.trailer}
+                 allow="autoplay; encrypted-media"
+                 allowFullScreen
+                 frameBorder="0"
+                 title={`${currentHero.title} trailer`}
+               ></iframe>
+             ) : currentHero.trailer ? (
+               <video className="hero-trailer" autoPlay loop muted>
+                 <source src={currentHero.trailer} type="video/mp4" />
+               </video>
+             ) : (
+               <video className="hero-trailer" autoPlay loop muted>
+                 <source src={EEAAOT} type="video/mp4" />
+               </video>
+             )}      
+          </div>
+
+            {/* Arrows */}
+          <button className="arrow left" onClick={(e) => { e.preventDefault(); setCurrentHeroIndex((currentHeroIndex - 1 + trendingMovies.length) % trendingMovies.length); }}>
+            &#10094;
+          </button>
+          <button className="arrow right" onClick={(e) => { e.preventDefault(); setCurrentHeroIndex((currentHeroIndex + 1) % trendingMovies.length); }}>
+            &#10095;
+          </button>
+          </div>
           </Link>
+        )}
         </section>
+
+      
+       <div className="categories">
         
         <MovRow rowslogan={t("discoverRate")} link_addon="" movD={trendingMovies}/>
 
         <MovRow rowslogan={t("comingSoonSection")} link_addon="coming-soon/" movD={upcomingMovies}/>
+      </div>
 
       </main>
     </div>

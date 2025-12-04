@@ -1,7 +1,7 @@
 import { useLang } from "../i18n/LanguageContext.jsx";
 
 // Convert TMDB rating (0-10 scale) to stars (0-5 scale)
-export function getStars(ratingValue) {
+export function getStars(ratingValue: number | string): string {
   let numericRating = 0;
   
   // Handle different input types
@@ -51,7 +51,7 @@ export function getStars(ratingValue) {
 export function useFormatters() {
   const { lang, t } = useLang();
 
-  const formatDate = (iso) => {
+  const formatDate = (iso: string): string => {
     try {
         const [y, m, d] = iso.split("-").map(Number);
         const dt = new Date(y, m - 1, d);
@@ -62,12 +62,12 @@ export function useFormatters() {
     }
   };
 
-  const formatGenres = (keysOrText) => {
+  const formatGenres = (keysOrText: string[] | string): string => {
     if (typeof keysOrText === "string") return keysOrText;
     return (keysOrText || []).map((k) => t(k)).join(", ");
   };
 
-  const getSynopsis = (syn) => {
+  const getSynopsis = (syn: string | { [key: string]: string } | undefined): string => {
     if (!syn) return "";
     if (typeof syn === "string") return syn;
     return syn[lang] || syn.en || "";
@@ -75,3 +75,4 @@ export function useFormatters() {
 
   return { formatDate, formatGenres, getSynopsis };
 }
+

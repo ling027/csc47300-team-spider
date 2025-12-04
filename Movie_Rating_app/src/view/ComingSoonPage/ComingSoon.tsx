@@ -1,12 +1,17 @@
 import "./comingsoon.css";
-import { upcomingMovies } from "../MovieDetailPage/movies.js";
+import "../main.css";
+import { upcomingMovies, type Movie } from "../MovieDetailPage/movies";
 import { Link } from "react-router-dom";
-import NavBar from "../Component/Navbar.jsx"
+import NavBar from "../Component/Navbar"
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
-import { useFormatters } from "../../utils/formatHelpers.js";
+import { useFormatters } from "../../utils/formatHelpers";
 
 
-function StarRow({ value = 5 }) {
+interface StarRowProps {
+  value?: number;
+}
+
+function StarRow({ value = 5 }: StarRowProps) {
   const { t } = useLang();
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
 
@@ -19,7 +24,11 @@ function StarRow({ value = 5 }) {
   );
 }
 
-function ComingSoonCard({ m }) {
+interface ComingSoonCardProps {
+  m: Movie;
+}
+
+function ComingSoonCard({ m }: ComingSoonCardProps) {
   const { t } = useLang();
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
 
@@ -33,7 +42,7 @@ function ComingSoonCard({ m }) {
 
       <h3 className="cs-title">{m.title}</h3>
       <div className="cs-meta">
-        <span>{formatGenres(m.genres ?? m.genre)}</span>
+        <span>{formatGenres(m.genre)}</span>
         <span>•</span>
         <span className="cs-date">{m.releaseDate ? formatDate(m.releaseDate) : (m.DOR || "")}</span>
       </div>
@@ -56,11 +65,14 @@ export default function ComingSoon() {
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
 
   return (
-    <>
-    <header className="site-header">
+    <div className="body">
+        <header className="site-header">
         <NavBar />
     </header>
-    <main className="cs-container">
+   
+    <div className="cs-container">
+  
+   
       <header className="cs-header">
         <h1>{t("comingSoon")}</h1>
         <p className="cs-subtitle">{t("discoverRate")}</p>
@@ -71,7 +83,9 @@ export default function ComingSoon() {
           <ComingSoonCard key={m.id} m={m} />
         ))}
       </section>
-    </main>
-    </>
+    
+    </div>
+     </div>
   );
 }
+

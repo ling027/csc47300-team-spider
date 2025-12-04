@@ -50,14 +50,14 @@ function Landing(): React.ReactElement {
             <Link to="/signup" className="btn-secondary">
               Create Account
             </Link>
+            <Link to="/home" className="btn-secondary">
+               Just Checking!
+            </Link>
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 }
 
 export default Landing;
-

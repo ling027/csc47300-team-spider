@@ -1,6 +1,6 @@
 import "../main.css"
 import {Link} from 'react-router-dom';
-import { useFormatters, getStars } from "../../utils/formatHelpers.js";
+import { useFormatters, getStars } from "../../utils/formatHelpers";
 
 function MovRow({rowslogan,link_addon, movD}){
   const { formatDate, formatGenres, getSynopsis } = useFormatters();
