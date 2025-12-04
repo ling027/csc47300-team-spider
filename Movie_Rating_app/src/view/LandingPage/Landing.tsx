@@ -56,8 +56,6 @@ function Landing(): React.ReactElement {
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 }

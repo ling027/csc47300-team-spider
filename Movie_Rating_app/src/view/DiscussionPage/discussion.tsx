@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './discussion.css';
 import '../main.css';
 import NavBar from '../Component/Navbar';
+import MinimalNavbar from '../Component/MinimalNavbar';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 
 // Type definitions
@@ -272,7 +273,9 @@ function DiscussionPage(): React.ReactElement {
       <header className="site-header">
         <NavBar/>
       </header>
-      
+
+      <MinimalNavbar />
+
       <div className="container">
         <header>
           <h1>Movie Discussions</h1>

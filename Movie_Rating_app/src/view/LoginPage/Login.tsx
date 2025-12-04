@@ -1,6 +1,5 @@
 import "../main.css";
 import "./Login.css";
-import NavBar from "../Component/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
 import React, { useState } from "react";
@@ -10,7 +9,6 @@ const Login: React.FC = () => {
   const { t } = useLang();
   const navigate = useNavigate();
   const { login } = useAuth();
-
 
   const [formData, setFormData] = useState({
     username: "",
@@ -51,10 +49,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="body">
-      <header className="site-header">
-        <NavBar />
-      </header>
-
       <main className="login-page">
         <div className="login-container">
           <h1>{t("login")}</h1>
@@ -102,7 +96,7 @@ const Login: React.FC = () => {
             )}
           </form>
 
-          <Link to="/SignUp" className="signup-link">
+          <Link to="/signup" className="signup-link">
             {t("noAccount")}
           </Link>
         </div>

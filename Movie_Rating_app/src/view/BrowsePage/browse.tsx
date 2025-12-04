@@ -2,6 +2,7 @@ import "../main.css";
 import "./browse.css";
 import { useState, useEffect } from 'react';
 import NavBar from "../Component/Navbar";
+import MinimalNavbar from "../Component/MinimalNavbar";
 import { Link } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
 import { useFormatters, getStars } from "../../utils/formatHelpers";
@@ -186,6 +187,9 @@ function Browse() {
         <header className="site-header">
           <NavBar />
         </header>
+        
+        <MinimalNavbar />
+        
         <main className="container">
           <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
         </main>
@@ -226,6 +230,9 @@ function Browse() {
       <header className="site-header">
         <NavBar />
       </header>
+      
+      <MinimalNavbar />
+      
       <main className="container">
         <h2 style={{color:"white"}}>{t("browseHeader")}</h2>
 

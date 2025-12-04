@@ -3,6 +3,7 @@ import "../main.css"
 import "./home.css"
 import "../Component/MovieDetailCard/MovieDetailCard.css"
 import NavBar from "../Component/Navbar"
+import MinimalNavbar from "../Component/MinimalNavbar"
 import {Link} from 'react-router-dom';
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 import MovRow from "../Component/MovieRow.jsx"
@@ -151,6 +152,8 @@ function Home(){
       <header className="site-header">
         <NavBar/>
       </header>
+      
+      <MinimalNavbar />
 
       <main className="container">
         <section className="hero-carousel">
