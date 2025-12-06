@@ -14,7 +14,10 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.params.id;
 
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findOne({ 
+      _id: userId,
+      isDeleted: { $ne: true }
+    }).select('-password');
 
     if (!user) {
       return res.status(404).json({
@@ -126,7 +129,10 @@ router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
     }
 
     // Get watchlists and calculate total runtime
-    const watchlists = await Watchlist.find({ userId });
+    const watchlists = await Watchlist.find({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
     let totalRuntime = 0;
     let totalMovies = 0;
     let totalRatings = 0;
@@ -146,10 +152,16 @@ router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
     const avgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : '0.0';
 
     // Get total comments
-    const totalComments = await MovieComment.countDocuments({ userId });
+    const totalComments = await MovieComment.countDocuments({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
 
     // Get total discussions
-    const totalDiscussions = await DiscussionThread.countDocuments({ userId });
+    const totalDiscussions = await DiscussionThread.countDocuments({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
 
     res.json({
       status: 'success',

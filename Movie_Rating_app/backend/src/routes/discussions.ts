@@ -11,7 +11,9 @@ const router = express.Router();
 // Get all discussion threads
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const threads = await DiscussionThread.find()
+    const threads = await DiscussionThread.find({ 
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username')
       .sort({ lastActivity: -1 });
 
@@ -47,7 +49,10 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const threadId = req.params.id;
 
-    const thread = await DiscussionThread.findById(threadId)
+    const thread = await DiscussionThread.findOne({
+      _id: threadId,
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username')
       .populate('replies.userId', 'username');
 
@@ -74,7 +79,7 @@ router.get('/:id', async (req: Request, res: Response) => {
           content: thread.content,
           tags: thread.tags,
           replies: thread.replies.map(reply => ({
-            id: reply._id,
+            id: (reply as any)._id,
             author: reply.author,
             content: reply.content,
             timestamp: reply.timestamp
@@ -255,6 +260,9 @@ router.post(
       thread.lastActivity = new Date();
       await thread.save();
 
+      // Get the saved reply (Mongoose adds _id after save)
+      const savedReply = thread.replies[thread.replies.length - 1];
+
       // Track activity
       try {
         await UserActivity.create({
@@ -271,10 +279,10 @@ router.post(
         message: 'Reply added successfully',
         data: {
           reply: {
-            id: newReply._id,
-            author: newReply.author,
-            content: newReply.content,
-            timestamp: newReply.timestamp
+            id: (savedReply as any)._id,
+            author: savedReply.author,
+            content: savedReply.content,
+            timestamp: savedReply.timestamp
           }
         }
       });

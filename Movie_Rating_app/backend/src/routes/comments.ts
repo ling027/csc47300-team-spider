@@ -20,7 +20,10 @@ router.get('/:movieId/comments', async (req: Request, res: Response) => {
       });
     }
 
-    const comments = await MovieComment.find({ movieTmdbId })
+    const comments = await MovieComment.find({ 
+      movieTmdbId,
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username email')
       .sort({ createdAt: -1 });
 

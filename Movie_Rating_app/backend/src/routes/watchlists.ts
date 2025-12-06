@@ -15,7 +15,10 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
 
-    const watchlists = await Watchlist.find({ userId })
+    const watchlists = await Watchlist.find({ 
+      userId,
+      isDeleted: { $ne: true }
+    })
       .sort({ createdAt: -1 });
 
     res.json({
@@ -257,7 +260,8 @@ router.post(
 
       const watchlist = await Watchlist.findOne({
         _id: watchlistId,
-        userId
+        userId,
+        isDeleted: { $ne: true }
       });
 
       if (!watchlist) {

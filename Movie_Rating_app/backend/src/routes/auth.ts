@@ -102,7 +102,8 @@ router.post('/register', registerValidation, async (req: Request, res: Response)
           id: user._id,
           username: user.username,
           email: user.email,
-          fullname: user.fullname
+          fullname: user.fullname,
+          isAdmin: user.isAdmin || false
         }
       }
     });
@@ -129,9 +130,10 @@ router.post('/login', loginValidation, async (req: Request, res: Response) => {
 
     const { username, password } = req.body;
 
-    // Find user by username or email
+    // Find user by username or email (exclude soft-deleted)
     const user = await User.findOne({
-      $or: [{ email: username }, { username }]
+      $or: [{ email: username }, { username }],
+      isDeleted: { $ne: true }
     });
 
     if (!user) {
@@ -163,7 +165,8 @@ router.post('/login', loginValidation, async (req: Request, res: Response) => {
           id: user._id,
           username: user.username,
           email: user.email,
-          fullname: user.fullname
+          fullname: user.fullname,
+          isAdmin: user.isAdmin || false
         }
       }
     });
@@ -193,7 +196,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
           id: req.user._id,
           username: req.user.username,
           email: req.user.email,
-          fullname: req.user.fullname
+          fullname: req.user.fullname,
+          isAdmin: req.user.isAdmin || false
         }
       }
     });

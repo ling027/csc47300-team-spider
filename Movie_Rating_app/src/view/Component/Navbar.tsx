@@ -1,10 +1,10 @@
 import { useState } from "react";
 import "../main.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useLang } from "../../i18n/LanguageContext.jsx";
-import { useAuth } from "../../context/AuthContext.tsx";
+import { useLang } from "../../i18n/LanguageContext";
+import { useAuth } from "../../context/AuthContext";
 import { IoHomeOutline, IoSearchSharp } from "react-icons/io5";
-import { MdMovieFilter, MdContactSupport } from "react-icons/md";
+import { MdMovieFilter, MdContactSupport, MdAdminPanelSettings } from "react-icons/md";
 import { FaRegBookmark } from "react-icons/fa";
 import { TbLogout2 } from 'react-icons/tb';
 import { FaUserLarge } from 'react-icons/fa6';
@@ -13,7 +13,7 @@ import { HiMenu, HiX } from "react-icons/hi";
 
 function NavBar() {
   const { lang, setLang, t } = useLang();
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -84,6 +84,12 @@ function NavBar() {
                 <FaUserLarge />
                 <span>{user?.username || "Profile"}</span>
               </Link>
+              {isAdmin() && (
+                <Link to="/admin" className="nav-link" onClick={handleLinkClick}>
+                  <MdAdminPanelSettings />
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
             </>
           )}
           {isLoggedIn ? (

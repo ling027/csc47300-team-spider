@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IDiscussionReply {
+  _id?: Types.ObjectId;
   userId: Types.ObjectId;
   author: string;
   content: string;
@@ -17,6 +18,8 @@ export interface IDiscussionThread extends Document {
   replies: IDiscussionReply[];
   views: number;
   lastActivity: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
 }
 
@@ -93,6 +96,14 @@ const DiscussionThreadSchema = new Schema<IDiscussionThread>(
     lastActivity: {
       type: Date,
       default: Date.now
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   {
