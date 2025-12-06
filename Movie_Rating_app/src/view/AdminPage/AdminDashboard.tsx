@@ -3,6 +3,7 @@ import { adminAPI } from '../../api/admin';
 import type { AdminStats, AdminUser, AdminComment, AdminDiscussion, AdminWatchlist, AdminActivity, TrashItem, AdminFilters } from '../../api/admin';
 import UserDetailView from './UserDetailView';
 import DiscussionDetailView from './DiscussionDetailView';
+import CommentDetailView from './CommentDetailView';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -12,6 +13,7 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(null);
+  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [comments, setComments] = useState<AdminComment[]>([]);
@@ -274,6 +276,34 @@ const AdminDashboard: React.FC = () => {
           discussionId={selectedDiscussionId}
           onBack={() => setSelectedDiscussionId(null)}
         />
+      ) : selectedCommentId ? (
+        (() => {
+          const selectedComment = comments.find(c => c.id === selectedCommentId);
+          if (!selectedComment) {
+            return (
+              <div className="admin-content">
+                <div className="admin-error">Comment not found. It may have been deleted or filtered out.</div>
+                <button onClick={() => setSelectedCommentId(null)} className="admin-back-button">
+                  ← Back to Comments
+                </button>
+              </div>
+            );
+          }
+          return (
+            <CommentDetailView
+              comment={selectedComment}
+              onBack={() => setSelectedCommentId(null)}
+              onDelete={() => {
+                loadComments();
+                loadStats();
+              }}
+              onRestore={() => {
+                loadComments();
+                loadStats();
+              }}
+            />
+          );
+        })()
       ) : (
       <div className="admin-content">
         {loading && <div className="admin-loading">Loading...</div>}
@@ -406,9 +436,23 @@ const AdminDashboard: React.FC = () => {
               <tbody>
                 {comments.map((comment) => (
                   <tr key={comment.id} className={comment.isDeleted ? 'deleted' : ''}>
-                    <td>{comment.username}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button
+                          className="admin-expand-button"
+                          onClick={() => setSelectedCommentId(comment.id)}
+                          aria-label="View full comment"
+                          title="View full comment"
+                        >
+                          ▶
+                        </button>
+                        <span>{comment.username}</span>
+                      </div>
+                    </td>
                     <td>{comment.movieTmdbId}</td>
-                    <td>{comment.text.substring(0, 50)}...</td>
+                    <td>
+                      {comment.text.length > 50 ? `${comment.text.substring(0, 50)}...` : comment.text}
+                    </td>
                     <td>{comment.isDeleted ? 'Deleted' : 'Active'}</td>
                     <td>{new Date(comment.createdAt).toLocaleDateString()}</td>
                     <td>
@@ -464,26 +508,30 @@ const AdminDashboard: React.FC = () => {
                   <th>Views</th>
                   <th>Status</th>
                   <th>Created</th>
+                  <th style={{ width: '40px' }}></th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {discussions.map((discussion) => (
                   <tr key={discussion.id} className={discussion.isDeleted ? 'deleted' : ''}>
-                    <td>
-                      <button
-                        className="admin-link-button"
-                        onClick={() => setSelectedDiscussionId(discussion.id)}
-                      >
-                        {discussion.title}
-                      </button>
-                    </td>
+                    <td>{discussion.title}</td>
                     <td>{discussion.author}</td>
                     <td>{discussion.movie}</td>
                     <td>{discussion.replies}</td>
                     <td>{discussion.views}</td>
                     <td>{discussion.isDeleted ? 'Deleted' : 'Active'}</td>
                     <td>{new Date(discussion.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="admin-expand-button"
+                        onClick={() => setSelectedDiscussionId(discussion.id)}
+                        aria-label="View full discussion"
+                        title="View full discussion"
+                      >
+                        ▶
+                      </button>
+                    </td>
                     <td>
                       {discussion.isDeleted ? (
                         <button onClick={() => handleRestore('discussion', discussion.id)}>Restore</button>
