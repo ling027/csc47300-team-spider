@@ -229,6 +229,21 @@ export const adminAPI = {
     
     const response = await apiClient.get(`/admin/trash?${params.toString()}`);
     return response.data;
+  },
+
+  getDiscussion: async (id: string): Promise<{ status: string; data: { thread: any } }> => {
+    const response = await apiClient.get(`/admin/discussions/${id}`);
+    return response.data;
+  },
+
+  deleteReply: async (discussionId: string, replyId: string): Promise<{ status: string; message: string }> => {
+    const response = await apiClient.delete(`/admin/discussions/${discussionId}/replies/${replyId}`);
+    return response.data;
+  },
+
+  getUserDetails: async (id: string): Promise<{ status: string; data: { user: AdminUser; stats: any; comments: AdminComment[]; discussions: AdminDiscussion[]; replies: any[]; activities: AdminActivity[] } }> => {
+    const response = await apiClient.get(`/admin/users/${id}/details`);
+    return response.data;
   }
 };
 

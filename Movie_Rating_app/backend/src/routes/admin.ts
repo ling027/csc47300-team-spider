@@ -445,6 +445,229 @@ router.post('/discussions/:id/restore', async (req: Request, res: Response) => {
   }
 });
 
+// Get specific discussion with replies (admin view)
+router.get('/discussions/:id', async (req: Request, res: Response) => {
+  try {
+    const discussionId = req.params.id;
+
+    const discussion = await DiscussionThread.findById(discussionId)
+      .populate('userId', 'username email')
+      .populate('replies.userId', 'username email');
+
+    if (!discussion) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Discussion not found'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      data: {
+        thread: {
+          id: discussion._id,
+          title: discussion.title,
+          movie: discussion.movieTitle,
+          movieTmdbId: discussion.movieTmdbId,
+          author: (discussion.userId as any)?.username || 'Unknown',
+          authorEmail: (discussion.userId as any)?.email || '',
+          content: discussion.content,
+          tags: discussion.tags,
+          replies: discussion.replies.map(reply => ({
+            id: (reply as any)._id,
+            userId: reply.userId,
+            author: reply.author,
+            content: reply.content,
+            timestamp: reply.timestamp
+          })),
+          views: discussion.views,
+          isDeleted: discussion.isDeleted,
+          deletedAt: discussion.deletedAt,
+          lastActivity: discussion.lastActivity,
+          createdAt: discussion.createdAt
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get discussion error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get discussion'
+    });
+  }
+});
+
+// Delete a specific reply from a discussion
+router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Response) => {
+  try {
+    const discussionId = req.params.id;
+    const replyId = req.params.replyId;
+
+    const discussion = await DiscussionThread.findById(discussionId);
+
+    if (!discussion) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Discussion not found'
+      });
+    }
+
+    const initialLength = discussion.replies.length;
+    discussion.replies = discussion.replies.filter(
+      (reply: any) => reply._id?.toString() !== replyId
+    );
+
+    if (discussion.replies.length === initialLength) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Reply not found'
+      });
+    }
+
+    discussion.lastActivity = new Date();
+    await discussion.save();
+
+    res.json({
+      status: 'success',
+      message: 'Reply deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete reply error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to delete reply'
+    });
+  }
+});
+
+// Get user details with activity
+router.get('/users/:id/details', async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Get user statistics
+    const watchlists = await Watchlist.find({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
+    
+    const totalComments = await MovieComment.countDocuments({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
+
+    const totalDiscussions = await DiscussionThread.countDocuments({ 
+      userId,
+      isDeleted: { $ne: true }
+    });
+
+    // Get user's comments
+    const comments = await MovieComment.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    // Get user's discussions
+    const discussions = await DiscussionThread.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    // Get all discussion threads that contain replies from this user
+    const allThreads = await DiscussionThread.find()
+      .sort({ createdAt: -1 })
+      .limit(500); // Get more threads to find user's replies
+
+    const userReplies: any[] = [];
+    allThreads.forEach(thread => {
+      thread.replies.forEach((reply: any) => {
+        if (reply.userId && reply.userId.toString() === userId) {
+          userReplies.push({
+            id: reply._id,
+            threadId: thread._id,
+            threadTitle: thread.title,
+            threadMovie: thread.movieTitle,
+            threadMovieId: thread.movieTmdbId,
+            content: reply.content,
+            timestamp: reply.timestamp,
+            threadIsDeleted: thread.isDeleted
+          });
+        }
+      });
+    });
+
+    // Sort replies by timestamp (newest first) and limit
+    userReplies.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const limitedReplies = userReplies.slice(0, 100);
+
+    // Get recent activity
+    const activities = await UserActivity.find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(50);
+
+    res.json({
+      status: 'success',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          fullname: user.fullname,
+          isAdmin: user.isAdmin,
+          isDeleted: user.isDeleted,
+          deletedAt: user.deletedAt,
+          createdAt: user.createdAt
+        },
+        stats: {
+          totalWatchlists: watchlists.length,
+          totalComments,
+          totalDiscussions
+        },
+        comments: comments.map(comment => ({
+          id: comment._id,
+          movieTmdbId: comment.movieTmdbId,
+          text: comment.text,
+          isDeleted: comment.isDeleted,
+          deletedAt: comment.deletedAt,
+          createdAt: comment.createdAt
+        })),
+        discussions: discussions.map(discussion => ({
+          id: discussion._id,
+          title: discussion.title,
+          movieTitle: discussion.movieTitle,
+          movieTmdbId: discussion.movieTmdbId,
+          content: discussion.content,
+          tags: discussion.tags,
+          replies: discussion.replies.length,
+          views: discussion.views,
+          isDeleted: discussion.isDeleted,
+          deletedAt: discussion.deletedAt,
+          createdAt: discussion.createdAt
+        })),
+        replies: limitedReplies,
+        activities: activities.map(activity => ({
+          id: activity._id,
+          activityType: activity.activityType,
+          movieId: activity.movieId,
+          timestamp: activity.timestamp
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Get user details error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get user details'
+    });
+  }
+});
+
 // Get all watchlists with filtering
 router.get('/watchlists', async (req: Request, res: Response) => {
   try {

@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
 import type { AdminStats, AdminUser, AdminComment, AdminDiscussion, AdminWatchlist, AdminActivity, TrashItem, AdminFilters } from '../../api/admin';
+import UserDetailView from './UserDetailView';
+import DiscussionDetailView from './DiscussionDetailView';
 import './admin.css';
 
 type TabType = 'stats' | 'users' | 'comments' | 'discussions' | 'watchlists' | 'activity' | 'trash';
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [comments, setComments] = useState<AdminComment[]>([]);
@@ -214,6 +218,17 @@ const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
+      {selectedUserId ? (
+        <UserDetailView
+          userId={selectedUserId}
+          onBack={() => setSelectedUserId(null)}
+        />
+      ) : selectedDiscussionId ? (
+        <DiscussionDetailView
+          discussionId={selectedDiscussionId}
+          onBack={() => setSelectedDiscussionId(null)}
+        />
+      ) : (
       <div className="admin-content">
         {loading && <div className="admin-loading">Loading...</div>}
 
@@ -275,7 +290,14 @@ const AdminDashboard: React.FC = () => {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id} className={user.isDeleted ? 'deleted' : ''}>
-                    <td>{user.username}</td>
+                    <td>
+                      <button
+                        className="admin-link-button"
+                        onClick={() => setSelectedUserId(user.id)}
+                      >
+                        {user.username}
+                      </button>
+                    </td>
                     <td>{user.email}</td>
                     <td>{user.fullname}</td>
                     <td>{user.isAdmin ? 'Yes' : 'No'}</td>
@@ -402,7 +424,14 @@ const AdminDashboard: React.FC = () => {
               <tbody>
                 {discussions.map((discussion) => (
                   <tr key={discussion.id} className={discussion.isDeleted ? 'deleted' : ''}>
-                    <td>{discussion.title}</td>
+                    <td>
+                      <button
+                        className="admin-link-button"
+                        onClick={() => setSelectedDiscussionId(discussion.id)}
+                      >
+                        {discussion.title}
+                      </button>
+                    </td>
                     <td>{discussion.author}</td>
                     <td>{discussion.movie}</td>
                     <td>{discussion.replies}</td>
@@ -584,6 +613,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
