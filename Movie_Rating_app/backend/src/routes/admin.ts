@@ -629,6 +629,16 @@ router.get('/users/:id/details', async (req: Request, res: Response) => {
           totalComments,
           totalDiscussions
         },
+        watchlists: watchlists.map(watchlist => ({
+          id: watchlist._id,
+          name: watchlist.name,
+          movies: watchlist.movies,
+          movieCount: watchlist.movies.length,
+          isDeleted: watchlist.isDeleted,
+          deletedAt: watchlist.deletedAt,
+          createdAt: watchlist.createdAt,
+          updatedAt: watchlist.updatedAt
+        })),
         comments: comments.map(comment => ({
           id: comment._id,
           movieTmdbId: comment.movieTmdbId,

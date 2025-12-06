@@ -246,7 +246,7 @@ export const adminAPI = {
     return response.data;
   },
 
-  getUserDetails: async (id: string): Promise<{ status: string; data: { user: AdminUser; stats: any; comments: AdminComment[]; discussions: AdminDiscussion[]; replies: any[]; activities: AdminActivity[] } }> => {
+  getUserDetails: async (id: string): Promise<{ status: string; data: { user: AdminUser; stats: any; watchlists: AdminWatchlist[]; comments: AdminComment[]; discussions: AdminDiscussion[]; replies: any[]; activities: AdminActivity[] } }> => {
     const response = await apiClient.get(`/admin/users/${id}/details`);
     return response.data;
   }

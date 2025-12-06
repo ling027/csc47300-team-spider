@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
-import type { AdminUser, AdminActivity, AdminComment, AdminDiscussion } from '../../api/admin';
+import type { AdminUser, AdminActivity, AdminComment, AdminDiscussion, AdminWatchlist } from '../../api/admin';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -12,11 +12,13 @@ interface UserDetailViewProps {
 const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [stats, setStats] = useState<any>(null);
+  const [watchlists, setWatchlists] = useState<AdminWatchlist[]>([]);
   const [comments, setComments] = useState<AdminComment[]>([]);
   const [discussions, setDiscussions] = useState<AdminDiscussion[]>([]);
   const [replies, setReplies] = useState<any[]>([]);
   const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedWatchlists, setExpandedWatchlists] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
       const response = await adminAPI.getUserDetails(userId);
       setUser(response.data.user);
       setStats(response.data.stats);
+      setWatchlists(response.data.watchlists || []);
       setComments(response.data.comments || []);
       setDiscussions(response.data.discussions || []);
       setReplies(response.data.replies || []);
@@ -114,6 +117,48 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
       loadUserDetails();
     } catch (err: any) {
       setError(err.message || 'Failed to delete reply');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleWatchlistExpand = (watchlistId: string) => {
+    setExpandedWatchlists(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(watchlistId)) {
+        newSet.delete(watchlistId);
+      } else {
+        newSet.add(watchlistId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRemoveMovieFromWatchlist = async (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
+    if (!window.confirm(`Are you sure you want to remove "${movieTitle}" from this watchlist?`)) return;
+
+    try {
+      setLoading(true);
+      
+      // Check if this is the last movie in the watchlist
+      const watchlist = watchlists.find(w => w.id === watchlistId);
+      const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
+      
+      await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
+      
+      // Reload user details to update the UI
+      await loadUserDetails();
+      
+      // Close the expanded view if the watchlist becomes empty
+      if (willBeEmpty) {
+        setExpandedWatchlists(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(watchlistId);
+          return newSet;
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to remove movie from watchlist');
     } finally {
       setLoading(false);
     }
@@ -220,6 +265,91 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
             <div className="info-row">
               <strong>Total Discussions:</strong> <span>{stats?.totalDiscussions || 0}</span>
             </div>
+          </div>
+        </div>
+
+        <div className="admin-detail-section">
+          <h3>Watchlists ({watchlists.length})</h3>
+          <div className="admin-interactions-list">
+            {watchlists.length === 0 ? (
+              <p>No watchlists found</p>
+            ) : (
+              <div className="interactions-container">
+                {watchlists.map((watchlist) => {
+                  const isExpanded = expandedWatchlists.has(watchlist.id);
+                  return (
+                    <div key={watchlist.id} className={`interaction-item ${watchlist.isDeleted ? 'deleted' : ''}`}>
+                      <div className="interaction-header" onClick={() => watchlist.movieCount > 0 && toggleWatchlistExpand(watchlist.id)}>
+                        <div className="interaction-info">
+                          <strong>{watchlist.name}</strong>
+                          <span className="interaction-meta">
+                            {watchlist.movieCount} movie{watchlist.movieCount !== 1 ? 's' : ''}
+                          </span>
+                          <span className="interaction-date">
+                            Created: {new Date(watchlist.createdAt).toLocaleString()}
+                          </span>
+                          {watchlist.isDeleted && <span className="deleted-badge">Deleted</span>}
+                        </div>
+                        {watchlist.movieCount > 0 && (
+                          <button className="expand-button">
+                            {isExpanded ? '▼' : '▶'}
+                          </button>
+                        )}
+                      </div>
+                      {isExpanded && watchlist.movies && watchlist.movies.length > 0 && (
+                        <div className="interaction-content">
+                          <div className="watchlist-movies-grid" style={{ marginTop: '1rem' }}>
+                            {watchlist.movies.map((movie: any, index: number) => (
+                              <div key={index} className="watchlist-movie-card">
+                                {movie.poster && (
+                                  <img 
+                                    src={movie.poster} 
+                                    alt={movie.title}
+                                    className="watchlist-movie-poster"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                )}
+                                <div className="watchlist-movie-details">
+                                  <div className="watchlist-movie-header">
+                                    <h5>{movie.title} ({movie.year})</h5>
+                                    <button
+                                      className="watchlist-remove-movie-button"
+                                      onClick={() => handleRemoveMovieFromWatchlist(watchlist.id, movie.tmdbId, movie.title)}
+                                      title="Remove movie from watchlist"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                  <div className="watchlist-movie-meta">
+                                    <span>Runtime: {movie.runtime} min</span>
+                                    <span className="watchlist-movie-rating">
+                                      Rating: {'★'.repeat(movie.rating)}{'☆'.repeat(5 - movie.rating)}
+                                    </span>
+                                  </div>
+                                  {movie.review && (
+                                    <div className="watchlist-movie-review">
+                                      <strong>Review:</strong>
+                                      <p>{movie.review}</p>
+                                    </div>
+                                  )}
+                                  {!movie.review && (
+                                    <div className="watchlist-movie-review-empty">
+                                      <em>No review provided</em>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
