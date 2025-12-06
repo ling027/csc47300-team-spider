@@ -8,6 +8,7 @@ import { tmdb } from "../../api/tmbd";
 import type { MovieDetails, Credits, Video } from "../../api/tmbd";
 import {useAuth} from "../../context/AuthContext";
 import { FaUserLarge } from 'react-icons/fa6';
+import { commentsAPI, type MovieComment } from "../../api/comments";
 
 function formatDate(lang: string, iso: string): string {
   if (!iso) return "";
@@ -97,11 +98,6 @@ function transformTMDBMovie(movieDetails: MovieDetails & { credits: Credits }, t
   };
 }
 
-interface CommentInterface{
-  id: number;
-  text: string;
-}
-
 function MDP({ source }: { source: any[] }) {
   const { id } = useParams<{ id: string }>();
   const numId = Number(id);
@@ -109,34 +105,54 @@ function MDP({ source }: { source: any[] }) {
   const [movie, setMovie] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isLoggedIn } = useAuth();
-  const existingUser = JSON.parse(localStorage.getItem("user") || "null");
+  const { isLoggedIn, user } = useAuth();
   const [commentInput, setCommentInput] = useState("");
-  const [comments, setComments] = useState<{ id: number; text: string }[]>([]);
+  const [comments, setComments] = useState<MovieComment[]>([]);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
  
+  // Fetch comments when movie ID changes
   useEffect(() => {
-  const saved: CommentInterface[] = JSON.parse(localStorage.getItem(`comments_${numId}`) || "[]"
-  );
-  setComments(saved);
-}, [numId]);
+    if (numId && !isNaN(numId)) {
+      fetchComments();
+    }
+  }, [numId]);
 
-const handleCommentSubmit = () => {
-  if (!isLoggedIn) {
-    alert("Please Sign in to submit comments!");
-    return;
-  }
-  if (!commentInput.trim()) return;
-
-  const newComment: CommentInterface = {
-    id: Date.now(),
-    text: commentInput.trim(),
+  const fetchComments = async () => {
+    try {
+      setCommentError(null);
+      const response = await commentsAPI.getByMovie(numId);
+      setComments(response.data.comments);
+    } catch (err: any) {
+      setCommentError(err.message || 'Failed to load comments');
+      console.error('Error fetching comments:', err);
+    }
   };
 
-  const updatedComments = [...comments, newComment];
-  localStorage.setItem(`comments_${numId}`, JSON.stringify(updatedComments));
-  setComments(updatedComments);
-  setCommentInput("");
-};
+  const handleCommentSubmit = async () => {
+    if (!isLoggedIn) {
+      alert("Please Sign in to submit comments!");
+      return;
+    }
+    if (!commentInput.trim()) return;
+
+    try {
+      setCommentLoading(true);
+      setCommentError(null);
+      const response = await commentsAPI.create(numId, {
+        text: commentInput.trim()
+      });
+      
+      setComments([response.data.comment, ...comments]);
+      setCommentInput("");
+    } catch (err: any) {
+      setCommentError(err.message || 'Failed to submit comment');
+      console.error('Error submitting comment:', err);
+      alert(err.message || 'Failed to submit comment');
+    } finally {
+      setCommentLoading(false);
+    }
+  };
 
 
   useEffect(() => {
@@ -237,21 +253,27 @@ const handleCommentSubmit = () => {
               onChange={(e) => setCommentInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCommentSubmit()}
             />
-            <button className="comment-btn" type="button" onClick={handleCommentSubmit}>
-              {t("submit")}
+            <button className="comment-btn" type="button" onClick={handleCommentSubmit} disabled={commentLoading}>
+              {commentLoading ? "Submitting..." : t("submit")}
             </button>
           </section>
 
           <section style={{width:"100%",height:"100%"}}>
+            {commentError && (
+              <p style={{color: "#ff5555", marginTop: "10px", textAlign:"center"}}>{commentError}</p>
+            )}
             {comments.length === 0 ? (
               <p style={{color: "black", marginTop: "100px", textAlign:"center"}}>Be the first one to comment on this movie!</p>
             ) : (
               comments.map((c) => (
                 <div key={c.id} className="comment-items">
                   <article className="comment-item">
-                    <h2><FaUserLarge /> {existingUser?.username || "Guest"}</h2>
-                    <h3 className="user-handle">{existingUser?.email || ""}</h3>
+                    <h2><FaUserLarge /> {c.username || "Guest"}</h2>
+                    <h3 className="user-handle">{c.email || ""}</h3>
                     <p className="comment-content">{c.text}</p>
+                    <p style={{fontSize: "0.8rem", color: "#666", marginTop: "5px"}}>
+                      {new Date(c.createdAt).toLocaleString()}
+                    </p>
                   </article>
                 </div>
               ))

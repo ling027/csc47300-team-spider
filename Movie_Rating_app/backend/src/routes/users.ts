@@ -1,0 +1,229 @@
+import express, { Response } from 'express';
+import { body, validationResult } from 'express-validator';
+import { User } from '../models/User.js';
+import { Watchlist } from '../models/Watchlist.js';
+import { MovieComment } from '../models/MovieComment.js';
+import { DiscussionThread } from '../models/DiscussionThread.js';
+import { UserActivity } from '../models/UserActivity.js';
+import { authMiddleware, AuthRequest } from '../middleware/auth.js';
+
+const router = express.Router();
+
+// Get user profile by ID
+router.get('/:id', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          fullname: user.fullname,
+          createdAt: user.createdAt
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get user'
+    });
+  }
+});
+
+// Update user profile (authenticated)
+router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const currentUserId = req.userId;
+
+    // Check if user is updating their own profile
+    if (userId !== currentUserId) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You can only update your own profile'
+      });
+    }
+
+    const { fullname, email } = req.body;
+    const updateData: { fullname?: string; email?: string } = {};
+
+    if (fullname) {
+      updateData.fullname = fullname.trim();
+    }
+
+    if (email) {
+      // Check if email is already taken by another user
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Email is already taken'
+        });
+      }
+      updateData.email = email.trim().toLowerCase();
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          fullname: user.fullname
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to update profile'
+    });
+  }
+});
+
+// Get user statistics
+router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Get watchlists and calculate total runtime
+    const watchlists = await Watchlist.find({ userId });
+    let totalRuntime = 0;
+    let totalMovies = 0;
+    let totalRatings = 0;
+    let ratingSum = 0;
+
+    watchlists.forEach(watchlist => {
+      watchlist.movies.forEach(movie => {
+        totalRuntime += movie.runtime;
+        totalMovies++;
+        if (movie.rating > 0) {
+          totalRatings++;
+          ratingSum += movie.rating;
+        }
+      });
+    });
+
+    const avgRating = totalRatings > 0 ? (ratingSum / totalRatings).toFixed(1) : '0.0';
+
+    // Get total comments
+    const totalComments = await MovieComment.countDocuments({ userId });
+
+    // Get total discussions
+    const totalDiscussions = await DiscussionThread.countDocuments({ userId });
+
+    res.json({
+      status: 'success',
+      data: {
+        stats: {
+          minutesWatched: totalRuntime,
+          moviesWatched: totalMovies,
+          avgRating: parseFloat(avgRating),
+          totalComments,
+          totalDiscussions,
+          totalWatchlists: watchlists.length
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get user statistics'
+    });
+  }
+});
+
+// Get user activity history
+router.get('/:id/activity', async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const limit = parseInt(req.query.limit as string) || 100;
+    const skip = parseInt(req.query.skip as string) || 0;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Get activity records
+    const activities = await UserActivity.find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .skip(skip);
+
+    // Format activity data for daily activity map (for profile calendar)
+    const dailyActivity: Record<string, number> = {};
+    activities.forEach(activity => {
+      const dateKey = activity.timestamp.toISOString().split('T')[0];
+      dailyActivity[dateKey] = (dailyActivity[dateKey] || 0) + 1;
+    });
+
+    res.json({
+      status: 'success',
+      data: {
+        activities: activities.map(activity => ({
+          id: activity._id,
+          activityType: activity.activityType,
+          movieId: activity.movieId,
+          timestamp: activity.timestamp
+        })),
+        dailyActivity,
+        total: activities.length
+      }
+    });
+  } catch (error) {
+    console.error('Get user activity error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get user activity'
+    });
+  }
+});
+
+export default router;
+
+

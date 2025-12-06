@@ -1,40 +1,68 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
+import { authAPI } from "../api/auth";
+import type { User } from "../api/auth";
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  user: any;
-  login: (userData: any) => void;
+  user: User | null;
+  login: (token: string, userData: User) => void;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
-    localStorage.getItem("isLoggedIn") === "true"
-  );
-  const [user, setUser] = useState<any>(JSON.parse(localStorage.getItem("user") || "null"));
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Persist changes
+  // Check for existing token on mount
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", String(isLoggedIn));
-  }, [isLoggedIn]);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const response = await authAPI.getCurrentUser();
+          setUser(response.data.user);
+          setIsLoggedIn(true);
+        } catch (error) {
+          // Token invalid, clear storage
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("isLoggedIn");
+        }
+      }
+      setLoading(false);
+    };
 
-  const login = (userData: any) => {
+    checkAuth();
+  }, []);
+
+  const login = (token: string, userData: User) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("isLoggedIn", "true");
     setUser(userData);
     setIsLoggedIn(true);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    localStorage.removeItem("user");
-    localStorage.removeItem("isLoggedIn");
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

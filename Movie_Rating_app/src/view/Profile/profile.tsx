@@ -4,6 +4,8 @@ import NavBar from "../Component/Navbar";
 import { useLang } from "../../i18n/LanguageContext";
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { usersAPI, type UserStats } from "../../api/users";
 
 interface FavoriteMovie {
   id: number;
@@ -11,20 +13,6 @@ interface FavoriteMovie {
   poster: string;
   rating: string;
   releaseDate?: string;
-}
-
-interface UserStats {
-  minutesWatched: number;
-  moviesWatched: number;
-  avgRating: number;
-}
-
-interface UserProfile {
-  username: string;
-  email: string;
-  joined: string;
-  avatar: string;
-  stats: UserStats;
 }
 
 type DailyActivityMap = Record<string, number>;
@@ -37,43 +25,55 @@ interface MonthItem {
 
 const Profile: React.FC = () => {
   const { t } = useLang();
+  const { user: currentUser } = useAuth();
   const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
-  const existingUser = JSON.parse(localStorage.getItem("user") || "null");
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [dailyActivity, setDailyActivity] = useState<DailyActivityMap>({});
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [user] = useState<UserProfile>({
-    username: "Test User",
-    email: "test@gmail.com",
-    joined: "March 2024",
-    avatar: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-    stats: {
-      minutesWatched: 8720,
-      moviesWatched: 48,
-      avgRating: 8.9,
-    },
-  });
-
-  // Load bookmarks
+  // Load bookmarks (keeping localStorage for now)
   useEffect(() => {
     const saved: FavoriteMovie[] = JSON.parse(localStorage.getItem("bookmarks") || "[]");
     setFavorites(saved);
   }, []);
+
+  // Fetch user stats and activity
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  const fetchUserData = async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [statsResponse, activityResponse] = await Promise.all([
+        usersAPI.getStats(currentUser.id),
+        usersAPI.getActivity(currentUser.id, 365)
+      ]);
+
+      setUserStats(statsResponse.data.stats);
+      setDailyActivity(activityResponse.data.dailyActivity || {});
+    } catch (err: any) {
+      setError(err.message || 'Failed to load profile data');
+      console.error('Error fetching user data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const removeBookmark = (id: number) => {
     const updated = favorites.filter((m) => m.id !== id);
     localStorage.setItem("bookmarks", JSON.stringify(updated));
     setFavorites(updated);
   };
-
-  const dailyActivity: DailyActivityMap = useMemo(() => {
-    const today = new Date();
-    const start = new Date(today.getFullYear() - 1, today.getMonth() + 1, 1);
-    const data: DailyActivityMap = {};
-    for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
-      const key = d.toISOString().split("T")[0];
-      data[key] = Math.floor(Math.random() * 5);
-    }
-    return data;
-  }, []);
 
   const months: MonthItem[] = useMemo(() => {
     const list: MonthItem[] = [];
@@ -126,11 +126,15 @@ const Profile: React.FC = () => {
           <div className="profile-main">
             {/* Profile Header */}
             <div className="profile-header">
-              <img src={user.avatar} alt="User avatar" className="profile-avatar" />
+              <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="User avatar" className="profile-avatar" />
               <div className="profile-info">
-                <h2>{existingUser.username}</h2>
-                <p>{existingUser.email}</p>
-                <p className="joined-date">{t("Joined")}: {user.joined}</p>
+                <h2>{currentUser?.username || "User"}</h2>
+                <p>{currentUser?.email || ""}</p>
+                <p className="joined-date">
+                  {t("Joined")}: {currentUser?.createdAt 
+                    ? new Date(currentUser.createdAt).toLocaleDateString('default', { month: 'long', year: 'numeric' })
+                    : "N/A"}
+                </p>
                 <button className="edit-btn">{t("Edit Profile")}</button>
               </div>
             </div>
@@ -199,20 +203,30 @@ const Profile: React.FC = () => {
           <div className="right-column">
             <aside className="profile-stats">
               <h3>{t("Your Stats")}</h3>
-              <div className="stat-box">
-                <p className="stat-label">{t("Minutes Watched")}</p>
-                <p className="stat-value">
-                  {user.stats.minutesWatched.toLocaleString()}
-                </p>
-              </div>
-              <div className="stat-box">
-                <p className="stat-label">{t("Movies Watched")}</p>
-                <p className="stat-value">{user.stats.moviesWatched}</p>
-              </div>
-              <div className="stat-box">
-                <p className="stat-label">{t("Average Rating Given")}</p>
-                <p className="stat-value">{user.stats.avgRating}</p>
-              </div>
+              {loading ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'white' }}>Loading stats...</div>
+              ) : error ? (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#ff5555' }}>{error}</div>
+              ) : userStats ? (
+                <>
+                  <div className="stat-box">
+                    <p className="stat-label">{t("Minutes Watched")}</p>
+                    <p className="stat-value">
+                      {userStats.minutesWatched.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="stat-box">
+                    <p className="stat-label">{t("Movies Watched")}</p>
+                    <p className="stat-value">{userStats.moviesWatched}</p>
+                  </div>
+                  <div className="stat-box">
+                    <p className="stat-label">{t("Average Rating Given")}</p>
+                    <p className="stat-value">{userStats.avgRating.toFixed(1)}</p>
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '1rem', textAlign: 'center', color: 'white' }}>No stats available</div>
+              )}
             </aside>
           </div>
         </div>

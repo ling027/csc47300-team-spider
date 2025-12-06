@@ -4,6 +4,7 @@ import NavBar from "../Component/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
 import React, { useState } from "react";
+import { authAPI } from "../../api/auth";
 
 const SignUp: React.FC = () => {
   const { t } = useLang();
@@ -17,6 +18,7 @@ const SignUp: React.FC = () => {
     reenter: "",
   });
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,54 +50,52 @@ const SignUp: React.FC = () => {
     return "";
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage("");
+    setLoading(true);
 
     if (formData.password !== formData.reenter) {
       setMessage("Passwords do not match");
+      setLoading(false);
       return;
     }
 
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
       setMessage(passwordError);
+      setLoading(false);
       return;
     }
 
     const emailError = validatedEmail(formData.email);
     if (emailError) {
       setMessage(emailError);
+      setLoading(false);
       return;
     }
 
     if (!formData.fullname || !formData.email || !formData.username) {
       setMessage("Please fill out all required fields");
+      setLoading(false);
       return;
     }
 
-    const existingUser = JSON.parse(localStorage.getItem("user") || "null");
-    if (existingUser && existingUser.email === formData.email) {
-      setMessage("User already exists. Please log in instead.");
-      return;
-    }
-
-    if (existingUser && existingUser.username === formData.username) {
-      setMessage("User already exists. Please log in instead.");
-      return;
-    }
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
+    try {
+      await authAPI.register({
         fullname: formData.fullname,
         email: formData.email,
         username: formData.username,
         password: formData.password,
-      })
-    );
+      });
 
-    setMessage("Sign up successful! Redirecting...");
-    setTimeout(() => navigate("/Login"), 1500);
+      setMessage("Sign up successful! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1500);
+    } catch (error: any) {
+      setMessage(error.message || "Failed to sign up. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -174,8 +174,8 @@ const SignUp: React.FC = () => {
             />
              <br/>
 
-            <button type="submit" className="login-button">
-              {t("signUpButton")}
+            <button type="submit" className="login-button" disabled={loading}>
+              {loading ? "Signing up..." : t("signUpButton")}
             </button>
 
             {message && (

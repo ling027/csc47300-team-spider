@@ -4,26 +4,12 @@ import '../main.css';
 import NavBar from '../Component/Navbar';
 import MinimalNavbar from '../Component/MinimalNavbar';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
+import { discussionsAPI, type DiscussionThread, type DiscussionReply } from '../../api/discussions';
+import { useAuth } from '../../context/AuthContext';
 
-// Type definitions
-interface Reply {
-  id: number;
-  author: string;
-  content: string;
-  timestamp: string;
-}
-
-interface Thread {
-  id: number;
-  title: string;
-  movie: string;
-  author: string;
-  replies: number;
-  views: number;
-  lastActivity: string;
-  tags: string[];
-  content: string;
-  replyList: Reply[];
+// Type definitions - using API types
+interface ThreadLocal extends DiscussionThread {
+  replyList?: DiscussionReply[];
 }
 
 interface NewThreadForm {
@@ -42,49 +28,11 @@ interface SelectedMovie {
   tmdbId: number;
 }
 
-const initialThreads: Thread[] = [
-  {
-    id: 1,
-    title: "Inception - Mind-bending masterpiece discussion",
-    movie: "Inception",
-    author: "MovieBuff2024",
-    replies: 23,
-    views: 156,
-    lastActivity: "2 hours ago",
-    tags: ["Christopher Nolan", "Sci-Fi", "Leonardo DiCaprio"],
-    content: "Just rewatched Inception and I'm still blown away by the complexity of the dream layers. What do you think about the ending - was Cobb still dreaming?",
-    replyList: []
-  },
-  {
-    id: 2,
-    title: "Everything Everywhere All at Once - Multiverse theories",
-    movie: "Everything Everywhere All at Once",
-    author: "SciFiFan",
-    replies: 18,
-    views: 89,
-    lastActivity: "5 hours ago",
-    tags: ["Multiverse", "Michelle Yeoh", "Philosophy"],
-    content: "The multiverse concept in EEAAO is fascinating. Do you think the hot dog fingers universe was the most creative one?",
-    replyList: []
-  },
-  {
-    id: 3,
-    title: "Spider-Man: Brand New Day - Predictions and theories",
-    movie: "Spider-Man: Brand New Day",
-    author: "WebHead",
-    replies: 31,
-    views: 203,
-    lastActivity: "1 day ago",
-    tags: ["Marvel", "Spider-Man", "Predictions"],
-    content: "With the new Spider-Man movie coming in 2026, what do you think the story will focus on? Any theories about the villain?",
-    replyList: []
-  }
-];
-
 function DiscussionPage(): React.ReactElement {
-  const [threads, setThreads] = useState<Thread[]>(initialThreads);
+  const { isLoggedIn } = useAuth();
+  const [threads, setThreads] = useState<ThreadLocal[]>([]);
   const [showNewThreadForm, setShowNewThreadForm] = useState<boolean>(false);
-  const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
   const [newThread, setNewThread] = useState<NewThreadForm>({
     title: '',
     movie: '',
@@ -95,8 +43,33 @@ function DiscussionPage(): React.ReactElement {
   const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [replyingToThread, setReplyingToThread] = useState<number | null>(null);
+  const [replyingToThread, setReplyingToThread] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch threads on mount
+  useEffect(() => {
+    fetchThreads();
+  }, []);
+
+  const fetchThreads = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await discussionsAPI.getAll();
+      const transformedThreads: ThreadLocal[] = response.data.threads.map(t => ({
+        ...t,
+        replyList: []
+      }));
+      setThreads(transformedThreads);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load discussions');
+      console.error('Error fetching threads:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleNewThreadForm = (): void => {
     setShowNewThreadForm(!showNewThreadForm);
@@ -114,16 +87,34 @@ function DiscussionPage(): React.ReactElement {
     }
   };
 
-  const toggleThreadExpansion = (threadId: number): void => {
+  const toggleThreadExpansion = async (threadId: string): Promise<void> => {
     setExpandedThreads(prev => {
       const newSet = new Set(prev);
       if (newSet.has(threadId)) {
         newSet.delete(threadId);
+        return newSet;
       } else {
         newSet.add(threadId);
+        // Fetch full thread details when expanding
+        fetchThreadDetails(threadId);
+        return newSet;
       }
-      return newSet;
     });
+  };
+
+  const fetchThreadDetails = async (threadId: string) => {
+    try {
+      const response = await discussionsAPI.getById(threadId);
+      const updatedThread = response.data.thread;
+      
+      setThreads(prev => prev.map(t => 
+        t.id === threadId 
+          ? { ...t, replyList: updatedThread.replies || [] }
+          : t
+      ));
+    } catch (err: any) {
+      console.error('Error fetching thread details:', err);
+    }
   };
 
   const handleInputChange = (field: keyof NewThreadForm, value: string): void => {
@@ -192,42 +183,59 @@ function DiscussionPage(): React.ReactElement {
     }
   };
 
-  const createNewThread = (): void => {
+  const createNewThread = async (): Promise<void> => {
     const { title, content, tags } = newThread;
     const movieTitle = selectedMovie ? selectedMovie.title : newThread.movie.trim();
+    const movieTmdbId = selectedMovie ? selectedMovie.tmdbId : 0;
     
     if (!title.trim() || !movieTitle || !content.trim()) {
       alert('Please fill in all required fields (title, movie, and content)');
       return;
     }
 
-    const threadToAdd: Thread = {
-      id: Date.now(),
-      title: title.trim(),
-      movie: movieTitle,
-      author: "You",
-      replies: 0,
-      views: 1,
-      lastActivity: "Just now",
-      tags: tags.trim() ? tags.split(',').map(tag => tag.trim()) : [],
-      content: content.trim(),
-      replyList: []
-    };
+    if (!selectedMovie && !newThread.movie.trim()) {
+      alert('Please search and select a movie from TMDB');
+      return;
+    }
 
-    setThreads([threadToAdd, ...threads]);
-    setShowNewThreadForm(false);
-    setNewThread({
-      title: '',
-      movie: '',
-      content: '',
-      tags: ''
-    });
-    setMovieSearchQuery('');
-    setSearchResults([]);
-    setSelectedMovie(null);
+    try {
+      setError(null);
+      const response = await discussionsAPI.create({
+        title: title.trim(),
+        movieTitle: movieTitle,
+        movieTmdbId: movieTmdbId,
+        content: content.trim(),
+        tags: tags.trim() ? tags.split(',').map(tag => tag.trim()) : []
+      });
+
+      const newThreadLocal: ThreadLocal = {
+        ...response.data.thread,
+        replyList: []
+      };
+
+      setThreads([newThreadLocal, ...threads]);
+      setShowNewThreadForm(false);
+      setNewThread({
+        title: '',
+        movie: '',
+        content: '',
+        tags: ''
+      });
+      setMovieSearchQuery('');
+      setSearchResults([]);
+      setSelectedMovie(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create thread');
+      console.error('Error creating thread:', err);
+      alert(err.message || 'Failed to create thread');
+    }
   };
 
-  const handleReplyClick = (threadId: number): void => {
+  const handleReplyClick = (threadId: string): void => {
+    if (!isLoggedIn) {
+      alert('Please log in to reply');
+      return;
+    }
     setReplyingToThread(threadId);
     setReplyContent('');
   };
@@ -237,35 +245,41 @@ function DiscussionPage(): React.ReactElement {
     setReplyContent('');
   };
 
-  const handleSubmitReply = (threadId: number): void => {
+  const handleSubmitReply = async (threadId: string): Promise<void> => {
     if (!replyContent.trim()) {
       alert('Please enter a reply');
       return;
     }
 
-    const newReply: Reply = {
-      id: Date.now(),
-      author: 'You',
-      content: replyContent.trim(),
-      timestamp: 'Just now'
-    };
+    try {
+      setError(null);
+      const response = await discussionsAPI.addReply(threadId, {
+        content: replyContent.trim()
+      });
 
-    setThreads(prevThreads => 
-      prevThreads.map(thread => {
-        if (thread.id === threadId) {
-          return {
-            ...thread,
-            replies: thread.replies + 1,
-            lastActivity: 'Just now',
-            replyList: [...thread.replyList, newReply]
-          };
-        }
-        return thread;
-      })
-    );
+      const newReply = response.data.reply;
 
-    setReplyingToThread(null);
-    setReplyContent('');
+      setThreads(prevThreads => 
+        prevThreads.map(thread => {
+          if (thread.id === threadId) {
+            return {
+              ...thread,
+              replies: thread.replies + 1,
+              lastActivity: newReply.timestamp,
+              replyList: [...(thread.replyList || []), newReply]
+            };
+          }
+          return thread;
+        })
+      );
+
+      setReplyingToThread(null);
+      setReplyContent('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit reply');
+      console.error('Error submitting reply:', err);
+      alert(err.message || 'Failed to submit reply');
+    }
   };
 
   return (
@@ -279,6 +293,11 @@ function DiscussionPage(): React.ReactElement {
       <div className="container">
         <header>
           <h1>Movie Discussions</h1>
+          {error && (
+            <div style={{ color: '#ff5555', marginTop: '10px', padding: '10px', background: 'rgba(255, 85, 85, 0.1)', borderRadius: '4px' }}>
+              {error}
+            </div>
+          )}
         </header>
 
         <div className="main-content">
@@ -444,7 +463,12 @@ function DiscussionPage(): React.ReactElement {
             )}
 
             <div className="threads-list">
-              {threads.length === 0 ? (
+              {loading ? (
+                <div className="empty-state">
+                  <div className="empty-icon">⏳</div>
+                  <p>Loading discussions...</p>
+                </div>
+              ) : threads.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-icon">💬</div>
                   <p>No discussions yet. Start the conversation!</p>
@@ -496,14 +520,16 @@ function DiscussionPage(): React.ReactElement {
                     {expandedThreads.has(thread.id) && (
                       <div className="thread-expanded-content">
                         {/* Display existing replies */}
-                        {thread.replyList.length > 0 && (
+                        {thread.replyList && thread.replyList.length > 0 && (
                           <div className="replies-list">
                             <h4 className="replies-header">Replies ({thread.replyList.length})</h4>
                             {thread.replyList.map(reply => (
                               <div key={reply.id} className="reply-item">
                                 <div className="reply-header">
                                   <span className="reply-author">{reply.author}</span>
-                                  <span className="reply-timestamp">{reply.timestamp}</span>
+                                  <span className="reply-timestamp">
+                                    {new Date(reply.timestamp).toLocaleString()}
+                                  </span>
                                 </div>
                                 <div className="reply-content">{reply.content}</div>
                               </div>

@@ -3,24 +3,19 @@ import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar';
 import MinimalNavbar from '../Component/MinimalNavbar';
-import { movies, upcomingMovies } from '../MovieDetailPage/movies';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
+import { watchlistsAPI, type Watchlist, type WatchlistMovie } from '../../api/watchlists';
+import { useAuth } from '../../context/AuthContext';
 
-// Type definitions
-interface WatchlistMovie {
-  id: number;
-  title: string;
-  year: number;
-  rating: number;
-  runtime: number;
-  poster: string;
-  review?: string;
+// Type definitions - using API types
+interface WatchlistMovieLocal extends WatchlistMovie {
+  id: number; // tmdbId for display purposes
 }
 
-interface Watchlist {
-  id: number;
+interface WatchlistLocal {
+  id: string; // MongoDB _id
   name: string;
-  movies: WatchlistMovie[];
+  movies: WatchlistMovieLocal[];
 }
 
 interface ListStats {
@@ -45,77 +40,7 @@ interface SelectedMovie {
   tmdbId: number;
 }
 
-const initialListsData: Watchlist[] = [
-  {
-    id: 1,
-    name: "Must Watch",
-    movies: [
-      { 
-        id: movies[0].id, 
-        title: movies[0].title, 
-        year: movies[0].releaseDate ? new Date(movies[0].releaseDate).getFullYear() : 2010, 
-        rating: 5, 
-        runtime: parseInt(movies[0].length) || 145,
-        poster: movies[0].poster,
-        review: "Inception is, without a doubt, one of my favourite movies of all time. Directed by Christopher Nolan, this film delivers a unique blend of mind-bending storytelling, impeccable performances, and stunning visuals that have left a lasting impression on me. From the moment I first watched it, I was captivated by its intricate plot and the way it challenges the audience to think deeply about the nature of reality and dreams."
-      },
-      { 
-        id: upcomingMovies[0].id, 
-        title: upcomingMovies[0].title, 
-        year: upcomingMovies[0].releaseDate ? new Date(upcomingMovies[0].releaseDate).getFullYear() : 2026, 
-        rating: 5, 
-        runtime: parseInt(upcomingMovies[0].length) || 165,
-        poster: upcomingMovies[0].poster
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: "Sci-Fi Classics",
-    movies: [
-      { 
-        id: movies[0].id, 
-        title: movies[0].title, 
-        year: movies[0].releaseDate ? new Date(movies[0].releaseDate).getFullYear() : 2010, 
-        rating: 5, 
-        runtime: parseInt(movies[0].length) || 145,
-        poster: movies[0].poster
-      },
-      { 
-        id: movies[2].id, 
-        title: movies[2].title, 
-        year: movies[2].DOR ? parseInt(movies[2].DOR) : 2022, 
-        rating: 3, 
-        runtime: parseInt(movies[2].length) || 139,
-        poster: movies[2].poster
-      }
-    ]
-  },
-  {
-    id: 3,
-    name: "Coming Soon",
-    movies: [
-      { 
-        id: upcomingMovies[1].id, 
-        title: upcomingMovies[1].title, 
-        year: upcomingMovies[1].releaseDate ? new Date(upcomingMovies[1].releaseDate).getFullYear() : 2026, 
-        rating: 4, 
-        runtime: parseInt(upcomingMovies[1].length) || 130,
-        poster: upcomingMovies[1].poster
-      },
-      { 
-        id: upcomingMovies[2].id, 
-        title: upcomingMovies[2].title, 
-        year: upcomingMovies[2].releaseDate ? new Date(upcomingMovies[2].releaseDate).getFullYear() : 2026, 
-        rating: 4, 
-        runtime: parseInt(upcomingMovies[2].length) || 170,
-        poster: upcomingMovies[2].poster
-      }
-    ]
-  }
-];
-
-function getListStats(list: Watchlist | undefined): ListStats {
+function getListStats(list: WatchlistLocal | undefined): ListStats {
   if (!list || !list.movies || list.movies.length === 0) {
     return {
       totalMovies: 0,
@@ -175,8 +100,9 @@ const renderStars = (rating: number): React.ReactElement[] => {
 };
 
 function WatchList(): React.ReactElement {
-  const [lists, setLists] = useState<Watchlist[]>(initialListsData);
-  const [selectedListId, setSelectedListId] = useState<number>(1);
+  const { isLoggedIn } = useAuth();
+  const [lists, setLists] = useState<WatchlistLocal[]>([]);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [showNewListForm, setShowNewListForm] = useState<boolean>(false);
   const [newListName, setNewListName] = useState<string>("");
   const [showAddMovieForm, setShowAddMovieForm] = useState<boolean>(false);
@@ -186,12 +112,48 @@ function WatchList(): React.ReactElement {
     review: ''
   });
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Movie search state
   const [movieSearchQuery, setMovieSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
+
+  // Fetch watchlists on mount
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchWatchlists();
+    } else {
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
+
+  const fetchWatchlists = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await watchlistsAPI.getAll();
+      const transformedLists: WatchlistLocal[] = response.data.watchlists.map(w => ({
+        id: w.id,
+        name: w.name,
+        movies: w.movies.map(m => ({
+          ...m,
+          id: m.tmdbId // Use tmdbId as id for display
+        }))
+      }));
+      setLists(transformedLists);
+      if (transformedLists.length > 0 && !selectedListId) {
+        setSelectedListId(transformedLists[0].id);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to load watchlists');
+      console.error('Error fetching watchlists:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const selectedList = lists.find(l => l.id === selectedListId);
   const stats = useMemo(() => getListStats(selectedList), [selectedList]);
@@ -200,26 +162,50 @@ function WatchList(): React.ReactElement {
     setShowNewListForm(!showNewListForm);
   };
 
-  const createNewList = (): void => {
+  const createNewList = async (): Promise<void> => {
     const name = newListName.trim();
-    if (name) {
-      const nextListId = (lists.length ? Math.max(...lists.map(l => l.id)) : 0) + 1;
-      const newList: Watchlist = { id: nextListId, name: name, movies: [] };
+    if (!name) return;
+
+    try {
+      setError(null);
+      const response = await watchlistsAPI.create(name);
+      const newList: WatchlistLocal = {
+        id: response.data.watchlist.id,
+        name: response.data.watchlist.name,
+        movies: response.data.watchlist.movies.map(m => ({
+          ...m,
+          id: m.tmdbId
+        }))
+      };
       setLists([...lists, newList]);
       setNewListName('');
       setShowNewListForm(false);
       setSelectedListId(newList.id);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create watchlist');
+      console.error('Error creating watchlist:', err);
     }
   };
 
-  const deleteList = (event: React.MouseEvent<HTMLButtonElement>, listId: number): void => {
+  const deleteList = async (event: React.MouseEvent<HTMLButtonElement>, listId: string): Promise<void> => {
     event.stopPropagation();
-    if (lists.length > 1) {
+    if (lists.length <= 1) {
+      alert('You must have at least one watchlist');
+      return;
+    }
+
+    try {
+      setError(null);
+      await watchlistsAPI.delete(listId);
       const newLists = lists.filter(l => l.id !== listId);
       setLists(newLists);
       if (selectedListId === listId) {
-        setSelectedListId(newLists[0].id);
+        setSelectedListId(newLists[0]?.id || null);
       }
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete watchlist');
+      console.error('Error deleting watchlist:', err);
+      alert(err.message || 'Failed to delete watchlist');
     }
   };
 
@@ -323,8 +309,13 @@ function WatchList(): React.ReactElement {
     }
   };
 
-  const addMovieToList = (): void => {
+  const addMovieToList = async (): Promise<void> => {
     const { rating, review } = newMovie;
+    
+    if (!selectedListId) {
+      alert('Please select a watchlist');
+      return;
+    }
     
     if (!selectedMovie && !newMovie.title.trim()) {
       alert('Please search and select a movie from the API, or enter a movie title');
@@ -336,44 +327,45 @@ function WatchList(): React.ReactElement {
       return;
     }
 
-    const movieToAdd: WatchlistMovie = selectedMovie ? {
-      id: selectedMovie.tmdbId, // Use TMDB ID as the unique identifier
-      title: selectedMovie.title,
-      year: selectedMovie.year,
-      runtime: selectedMovie.runtime,
-      rating: rating,
-      review: review.trim(),
-      poster: selectedMovie.poster
-    } : {
-      id: Date.now(),
-      title: newMovie.title.trim(),
-      year: new Date().getFullYear(),
-      runtime: 120,
-      rating: rating,
-      review: review.trim(),
-      poster: "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image"
-    };
+    try {
+      setError(null);
+      const movieData = selectedMovie ? {
+        tmdbId: selectedMovie.tmdbId,
+        title: selectedMovie.title,
+        year: selectedMovie.year,
+        runtime: selectedMovie.runtime,
+        rating: rating,
+        review: review.trim(),
+        poster: selectedMovie.poster
+      } : {
+        tmdbId: Date.now(), // Fallback ID for manual entries
+        title: newMovie.title.trim(),
+        year: new Date().getFullYear(),
+        runtime: 120,
+        rating: rating,
+        review: review.trim(),
+        poster: "https://via.placeholder.com/60x90/2b2b44/ffffff?text=No+Image"
+      };
 
-    const updatedLists = lists.map(list => {
-      if (list.id === selectedListId) {
-        return {
-          ...list,
-          movies: [...list.movies, movieToAdd]
-        };
-      }
-      return list;
-    });
-
-    setLists(updatedLists);
-    setShowAddMovieForm(false);
-    setNewMovie({
-      title: '',
-      rating: 0,
-      review: ''
-    });
-    setMovieSearchQuery('');
-    setSearchResults([]);
-    setSelectedMovie(null);
+      await watchlistsAPI.addMovie(selectedListId, movieData);
+      
+      // Refresh watchlists
+      await fetchWatchlists();
+      
+      setShowAddMovieForm(false);
+      setNewMovie({
+        title: '',
+        rating: 0,
+        review: ''
+      });
+      setMovieSearchQuery('');
+      setSearchResults([]);
+      setSelectedMovie(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to add movie');
+      console.error('Error adding movie:', err);
+      alert(err.message || 'Failed to add movie');
+    }
   };
 
   return (
@@ -387,6 +379,11 @@ function WatchList(): React.ReactElement {
       <div className="container">
         <header>
           <h1>Your Watchlists</h1>
+          {error && (
+            <div style={{ color: '#ff5555', marginTop: '10px', padding: '10px', background: 'rgba(255, 85, 85, 0.1)', borderRadius: '4px' }}>
+              {error}
+            </div>
+          )}
         </header>
 
         <div className="main-content">
@@ -408,21 +405,27 @@ function WatchList(): React.ReactElement {
               </div>
 
               <div className="list-items">
-                {lists.map(list => (
-                  <div 
-                    key={list.id}
-                    className={`list-item ${list.id === selectedListId ? 'active' : ''}`} 
-                    onClick={() => setSelectedListId(list.id)}
-                  >
-                    <div className="list-item-info">
-                      <div className="list-item-name">{list.name}</div>
-                      <div className="list-item-count">{list.movies.length} movies</div>
+                {loading ? (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'white' }}>Loading...</div>
+                ) : lists.length === 0 ? (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'white' }}>No watchlists yet</div>
+                ) : (
+                  lists.map(list => (
+                    <div 
+                      key={list.id}
+                      className={`list-item ${list.id === selectedListId ? 'active' : ''}`} 
+                      onClick={() => setSelectedListId(list.id)}
+                    >
+                      <div className="list-item-info">
+                        <div className="list-item-name">{list.name}</div>
+                        <div className="list-item-count">{list.movies.length} movies</div>
+                      </div>
+                      {lists.length > 1 && (
+                        <button className="btn-delete" onClick={(e) => deleteList(e, list.id)}>×</button>
+                      )}
                     </div>
-                    {lists.length > 1 && (
-                      <button className="btn-delete" onClick={(e) => deleteList(e, list.id)}>×</button>
-                    )}
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </aside>
@@ -671,17 +674,17 @@ function WatchList(): React.ReactElement {
                               <td className="right">
                                 <button 
                                   className="btn-remove" 
-                                  onClick={() => {
-                                    const updatedLists = lists.map(list => {
-                                      if (list.id === selectedListId) {
-                                        return {
-                                          ...list,
-                                          movies: list.movies.filter(m => m.id !== movie.id)
-                                        };
-                                      }
-                                      return list;
-                                    });
-                                    setLists(updatedLists);
+                                  onClick={async () => {
+                                    if (!selectedListId) return;
+                                    try {
+                                      setError(null);
+                                      await watchlistsAPI.removeMovie(selectedListId, movie.id);
+                                      await fetchWatchlists();
+                                    } catch (err: any) {
+                                      setError(err.message || 'Failed to remove movie');
+                                      console.error('Error removing movie:', err);
+                                      alert(err.message || 'Failed to remove movie');
+                                    }
                                   }}
                                 >
                                   Remove

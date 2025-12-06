@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useLang } from "../../i18n/LanguageContext";
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { authAPI } from "../../api/auth";
 
 const Login: React.FC = () => {
   const { t } = useLang();
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
   });
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,27 +25,24 @@ const Login: React.FC = () => {
   };
 
   // Handle login submit
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage("");
+    setLoading(true);
 
-    const savedUser = JSON.parse(localStorage.getItem("user") || "null");
+    try {
+      const response = await authAPI.login({
+        username: formData.username,
+        password: formData.password,
+      });
 
-    if (!savedUser) {
-      setMessage(" No user found. Please sign up first.");
-      return;
-    }
-
-    const isMatch =
-      (formData.username === savedUser.username ||
-        formData.username === savedUser.email) &&
-      formData.password === savedUser.password;
-
-    if (isMatch) {
-      login(savedUser); 
-      setMessage(` Welcome back, ${savedUser.fullname || savedUser.username}!`);
+      login(response.data.token, response.data.user);
+      setMessage(`Welcome back, ${response.data.user.fullname || response.data.user.username}!`);
       setTimeout(() => navigate("/home"), 1000);
-    } else {
-      setMessage("Invalid username or password.");
+    } catch (error: any) {
+      setMessage(error.message || "Invalid username or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,8 +79,8 @@ const Login: React.FC = () => {
             />
             <br />
 
-            <button type="submit" className="login-button">
-              {t("login")}
+            <button type="submit" className="login-button" disabled={loading}>
+              {loading ? "Logging in..." : t("login")}
             </button>
 
             {message && (

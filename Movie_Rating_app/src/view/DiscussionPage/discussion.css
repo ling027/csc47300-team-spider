@@ -14,9 +14,10 @@
 
 
 .container {
-  max-width: 1400px;
+  max-width: 75%;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
 }
 
 header {
@@ -35,11 +36,13 @@ h1 {
 .main-content {
   display: flex;
   gap: 24px;
+  width: 100%;
 }
 
 .sidebar {
-  width: 280px;
+  width: 240px;
   flex-shrink: 0;
+  min-width: 200px;
 }
 
 .sidebar-card {
@@ -97,6 +100,8 @@ h1 {
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   flex: 1;
+  min-width: 0;
+  width: 100%;
 }
 
 .discussion-header {
@@ -232,6 +237,7 @@ h1 {
   padding: 20px;
   border: 1px solid #374151;
   transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
 }
 
 .thread-card:hover {
@@ -269,6 +275,8 @@ h1 {
   line-height: 1.4;
   margin: 0;
   flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .expand-arrow {
@@ -601,6 +609,12 @@ h1 {
 
 .btn-clear-movie:hover {
   background-color: #b91c1c;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+  }
 }
 
 @media (max-width: 768px) {
