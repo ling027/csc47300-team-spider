@@ -1,5 +1,4 @@
 import express, { Response } from 'express';
-import { body, validationResult } from 'express-validator';
 import { User } from '../models/User.js';
 import { Watchlist } from '../models/Watchlist.js';
 import { MovieComment } from '../models/MovieComment.js';
@@ -10,7 +9,7 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get user profile by ID
-router.get('/:id', async (req: AuthRequest, res: Response) => {
+router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
 
@@ -20,10 +19,11 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     }).select('-password');
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     res.json({
@@ -48,17 +48,18 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 });
 
 // Update user profile (authenticated)
-router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     const currentUserId = req.userId;
 
     // Check if user is updating their own profile
     if (userId !== currentUserId) {
-      return res.status(403).json({
+      res.status(403).json({
         status: 'error',
         message: 'You can only update your own profile'
       });
+      return;
     }
 
     const { fullname, email } = req.body;
@@ -72,10 +73,11 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       // Check if email is already taken by another user
       const existingUser = await User.findOne({ email, _id: { $ne: userId } });
       if (existingUser) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Email is already taken'
         });
+        return;
       }
       updateData.email = email.trim().toLowerCase();
     }
@@ -87,10 +89,11 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     ).select('-password');
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     res.json({
@@ -115,17 +118,18 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // Get user statistics
-router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
+router.get('/:id/stats', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
 
     // Verify user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     // Get watchlists and calculate total runtime
@@ -186,7 +190,7 @@ router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
 });
 
 // Get user activity history
-router.get('/:id/activity', async (req: AuthRequest, res: Response) => {
+router.get('/:id/activity', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     const limit = parseInt(req.query.limit as string) || 100;
@@ -195,10 +199,11 @@ router.get('/:id/activity', async (req: AuthRequest, res: Response) => {
     // Verify user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     // Get activity records
@@ -237,5 +242,4 @@ router.get('/:id/activity', async (req: AuthRequest, res: Response) => {
 });
 
 export default router;
-
 

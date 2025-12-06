@@ -4,7 +4,7 @@ import { MovieComment } from '../models/MovieComment.js';
 import { DiscussionThread } from '../models/DiscussionThread.js';
 import { Watchlist } from '../models/Watchlist.js';
 import { UserActivity } from '../models/UserActivity.js';
-import { adminMiddleware, AuthRequest } from '../middleware/auth.js';
+import { adminMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
 router.use(adminMiddleware);
 
 // Get dashboard statistics
-router.get('/stats', async (req: Request, res: Response) => {
+router.get('/stats', async (_req: Request, res: Response): Promise<void> => {
   try {
     const totalUsers = await User.countDocuments({ isDeleted: { $ne: true } });
     const totalComments = await MovieComment.countDocuments({ isDeleted: { $ne: true } });
@@ -111,7 +111,7 @@ router.get('/users', async (req: Request, res: Response) => {
 });
 
 // Soft delete user
-router.delete('/users/:id', async (req: Request, res: Response) => {
+router.delete('/users/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
 
@@ -122,10 +122,11 @@ router.delete('/users/:id', async (req: Request, res: Response) => {
     );
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     res.json({
@@ -142,7 +143,7 @@ router.delete('/users/:id', async (req: Request, res: Response) => {
 });
 
 // Restore user
-router.post('/users/:id/restore', async (req: Request, res: Response) => {
+router.post('/users/:id/restore', async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
 
@@ -153,10 +154,11 @@ router.post('/users/:id/restore', async (req: Request, res: Response) => {
     );
 
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     res.json({
@@ -244,7 +246,7 @@ router.get('/comments', async (req: Request, res: Response) => {
 });
 
 // Soft delete comment
-router.delete('/comments/:id', async (req: Request, res: Response) => {
+router.delete('/comments/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const commentId = req.params.id;
 
@@ -255,10 +257,11 @@ router.delete('/comments/:id', async (req: Request, res: Response) => {
     );
 
     if (!comment) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Comment not found'
       });
+      return;
     }
 
     res.json({
@@ -275,7 +278,7 @@ router.delete('/comments/:id', async (req: Request, res: Response) => {
 });
 
 // Restore comment
-router.post('/comments/:id/restore', async (req: Request, res: Response) => {
+router.post('/comments/:id/restore', async (req: Request, res: Response): Promise<void> => {
   try {
     const commentId = req.params.id;
 
@@ -286,10 +289,11 @@ router.post('/comments/:id/restore', async (req: Request, res: Response) => {
     );
 
     if (!comment) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Comment not found'
       });
+      return;
     }
 
     res.json({
@@ -384,7 +388,7 @@ router.get('/discussions', async (req: Request, res: Response) => {
 });
 
 // Soft delete discussion
-router.delete('/discussions/:id', async (req: Request, res: Response) => {
+router.delete('/discussions/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const discussionId = req.params.id;
 
@@ -395,10 +399,11 @@ router.delete('/discussions/:id', async (req: Request, res: Response) => {
     );
 
     if (!discussion) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Discussion not found'
       });
+      return;
     }
 
     res.json({
@@ -415,7 +420,7 @@ router.delete('/discussions/:id', async (req: Request, res: Response) => {
 });
 
 // Restore discussion
-router.post('/discussions/:id/restore', async (req: Request, res: Response) => {
+router.post('/discussions/:id/restore', async (req: Request, res: Response): Promise<void> => {
   try {
     const discussionId = req.params.id;
 
@@ -426,10 +431,11 @@ router.post('/discussions/:id/restore', async (req: Request, res: Response) => {
     );
 
     if (!discussion) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Discussion not found'
       });
+      return;
     }
 
     res.json({
@@ -446,7 +452,7 @@ router.post('/discussions/:id/restore', async (req: Request, res: Response) => {
 });
 
 // Get specific discussion with replies (admin view)
-router.get('/discussions/:id', async (req: Request, res: Response) => {
+router.get('/discussions/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const discussionId = req.params.id;
 
@@ -455,10 +461,11 @@ router.get('/discussions/:id', async (req: Request, res: Response) => {
       .populate('replies.userId', 'username email');
 
     if (!discussion) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Discussion not found'
       });
+      return;
     }
 
     res.json({
@@ -498,7 +505,7 @@ router.get('/discussions/:id', async (req: Request, res: Response) => {
 });
 
 // Delete a specific reply from a discussion
-router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Response) => {
+router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Response): Promise<void> => {
   try {
     const discussionId = req.params.id;
     const replyId = req.params.replyId;
@@ -506,10 +513,11 @@ router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Res
     const discussion = await DiscussionThread.findById(discussionId);
 
     if (!discussion) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Discussion not found'
       });
+      return;
     }
 
     const initialLength = discussion.replies.length;
@@ -518,10 +526,11 @@ router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Res
     );
 
     if (discussion.replies.length === initialLength) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Reply not found'
       });
+      return;
     }
 
     discussion.lastActivity = new Date();
@@ -541,16 +550,17 @@ router.delete('/discussions/:id/replies/:replyId', async (req: Request, res: Res
 });
 
 // Get user details with activity
-router.get('/users/:id/details', async (req: Request, res: Response) => {
+router.get('/users/:id/details', async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
 
     const user = await User.findById(userId).select('-password');
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'User not found'
       });
+      return;
     }
 
     // Get user statistics
@@ -748,7 +758,7 @@ router.get('/watchlists', async (req: Request, res: Response) => {
 });
 
 // Soft delete watchlist
-router.delete('/watchlists/:id', async (req: Request, res: Response) => {
+router.delete('/watchlists/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
 
@@ -759,10 +769,11 @@ router.delete('/watchlists/:id', async (req: Request, res: Response) => {
     );
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     res.json({
@@ -779,7 +790,7 @@ router.delete('/watchlists/:id', async (req: Request, res: Response) => {
 });
 
 // Restore watchlist
-router.post('/watchlists/:id/restore', async (req: Request, res: Response) => {
+router.post('/watchlists/:id/restore', async (req: Request, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
 
@@ -790,10 +801,11 @@ router.post('/watchlists/:id/restore', async (req: Request, res: Response) => {
     );
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     res.json({
@@ -810,35 +822,38 @@ router.post('/watchlists/:id/restore', async (req: Request, res: Response) => {
 });
 
 // Remove movie from watchlist (admin only)
-router.delete('/watchlists/:id/movies/:movieId', async (req: Request, res: Response) => {
+router.delete('/watchlists/:id/movies/:movieId', async (req: Request, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
     const movieTmdbId = parseInt(req.params.movieId);
 
     if (isNaN(movieTmdbId)) {
-      return res.status(400).json({
+      res.status(400).json({
         status: 'error',
         message: 'Invalid movie ID'
       });
+      return;
     }
 
     const watchlist = await Watchlist.findById(watchlistId);
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     const initialLength = watchlist.movies.length;
     watchlist.movies = watchlist.movies.filter(m => m.tmdbId !== movieTmdbId);
 
     if (watchlist.movies.length === initialLength) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Movie not found in watchlist'
       });
+      return;
     }
 
     await watchlist.save();

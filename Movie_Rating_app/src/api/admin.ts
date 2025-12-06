@@ -82,18 +82,6 @@ export interface AdminActivity {
   timestamp: Date;
 }
 
-// Export all types for easier importing
-export type {
-  AdminStats,
-  AdminFilters,
-  AdminUser,
-  AdminComment,
-  AdminDiscussion,
-  AdminWatchlist,
-  AdminActivity,
-  TrashItem
-};
-
 export interface TrashItem {
   id: string;
   type: 'user' | 'comment' | 'discussion' | 'watchlist';
