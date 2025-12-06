@@ -799,6 +799,73 @@ router.post('/watchlists/:id/restore', async (req: Request, res: Response) => {
   }
 });
 
+// Remove movie from watchlist (admin only)
+router.delete('/watchlists/:id/movies/:movieId', async (req: Request, res: Response) => {
+  try {
+    const watchlistId = req.params.id;
+    const movieTmdbId = parseInt(req.params.movieId);
+
+    if (isNaN(movieTmdbId)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid movie ID'
+      });
+    }
+
+    const watchlist = await Watchlist.findById(watchlistId);
+
+    if (!watchlist) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Watchlist not found'
+      });
+    }
+
+    const initialLength = watchlist.movies.length;
+    watchlist.movies = watchlist.movies.filter(m => m.tmdbId !== movieTmdbId);
+
+    if (watchlist.movies.length === initialLength) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Movie not found in watchlist'
+      });
+    }
+
+    await watchlist.save();
+
+    // Track activity for the watchlist owner
+    try {
+      await UserActivity.create({
+        userId: watchlist.userId,
+        activityType: 'watchlist_remove',
+        movieId: movieTmdbId
+      });
+    } catch (activityError) {
+      console.error('Failed to track activity:', activityError);
+      // Don't fail the request if activity tracking fails
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Movie removed from watchlist successfully',
+      data: {
+        watchlist: {
+          id: watchlist._id,
+          name: watchlist.name,
+          movies: watchlist.movies,
+          movieCount: watchlist.movies.length
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Remove movie from watchlist error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to remove movie from watchlist'
+    });
+  }
+});
+
 // Get activity logs with filtering
 router.get('/activity', async (req: Request, res: Response) => {
   try {

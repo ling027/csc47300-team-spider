@@ -599,3 +599,181 @@
   }
 }
 
+/* Watchlist Expansion Styles */
+.admin-expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #007bff;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.3s;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-expand-button:hover {
+  color: #0056b3;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.watchlist-expanded-content {
+  background-color: #f8f9fa;
+  padding: 0 !important;
+  border-top: 2px solid #ddd;
+}
+
+.watchlist-movies-container {
+  padding: 1.5rem;
+}
+
+.watchlist-movies-container h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.watchlist-movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.watchlist-movie-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s;
+}
+
+.watchlist-movie-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.watchlist-movie-poster {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+.watchlist-movie-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.watchlist-movie-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.watchlist-movie-details h5 {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.watchlist-remove-movie-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.watchlist-remove-movie-button:hover {
+  background-color: #c82333;
+  transform: scale(1.1);
+}
+
+.watchlist-remove-movie-button:active {
+  transform: scale(0.95);
+}
+
+.watchlist-movie-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.watchlist-movie-rating {
+  color: #f39c12;
+  font-weight: 500;
+}
+
+.watchlist-movie-review {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.watchlist-movie-review strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.watchlist-movie-review p {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.watchlist-movie-review-empty {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  color: #999;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .watchlist-movies-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .watchlist-movie-card {
+    flex-direction: row;
+  }
+
+  .watchlist-movie-poster {
+    max-width: 100px;
+    margin: 0;
+  }
+}
+

@@ -207,6 +207,11 @@ export const adminAPI = {
     return response.data;
   },
 
+  removeMovieFromWatchlist: async (watchlistId: string, movieId: number): Promise<{ status: string; message: string; data?: { watchlist: any } }> => {
+    const response = await apiClient.delete(`/admin/watchlists/${watchlistId}/movies/${movieId}`);
+    return response.data;
+  },
+
   getActivity: async (filters?: AdminFilters): Promise<{ status: string; data: { activities: AdminActivity[]; pagination: any } }> => {
     const params = new URLSearchParams();
     if (filters?.userId) params.append('userId', filters.userId);

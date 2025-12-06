@@ -26,6 +26,7 @@ const AdminDashboard: React.FC = () => {
     limit: 20
   });
   const [pagination, setPagination] = useState<any>(null);
+  const [expandedWatchlists, setExpandedWatchlists] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadStats();
@@ -186,6 +187,48 @@ const AdminDashboard: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setFilters({ ...filters, page });
+  };
+
+  const toggleWatchlistExpand = (watchlistId: string) => {
+    setExpandedWatchlists(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(watchlistId)) {
+        newSet.delete(watchlistId);
+      } else {
+        newSet.add(watchlistId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRemoveMovieFromWatchlist = async (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
+    if (!window.confirm(`Are you sure you want to remove "${movieTitle}" from this watchlist?`)) return;
+
+    try {
+      setLoading(true);
+      
+      // Check if this is the last movie in the watchlist
+      const watchlist = watchlists.find(w => w.id === watchlistId);
+      const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
+      
+      await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
+      
+      // Reload watchlists to update the UI
+      await loadWatchlists();
+      
+      // Close the expanded view if the watchlist becomes empty
+      if (willBeEmpty) {
+        setExpandedWatchlists(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(watchlistId);
+          return newSet;
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to remove movie from watchlist');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -487,6 +530,7 @@ const AdminDashboard: React.FC = () => {
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th style={{ width: '40px' }}></th>
                   <th>Name</th>
                   <th>Owner</th>
                   <th>Movies</th>
@@ -496,22 +540,92 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {watchlists.map((watchlist) => (
-                  <tr key={watchlist.id} className={watchlist.isDeleted ? 'deleted' : ''}>
-                    <td>{watchlist.name}</td>
-                    <td>{watchlist.username}</td>
-                    <td>{watchlist.movieCount}</td>
-                    <td>{watchlist.isDeleted ? 'Deleted' : 'Active'}</td>
-                    <td>{new Date(watchlist.createdAt).toLocaleDateString()}</td>
-                    <td>
-                      {watchlist.isDeleted ? (
-                        <button onClick={() => handleRestore('watchlist', watchlist.id)}>Restore</button>
-                      ) : (
-                        <button onClick={() => handleDelete('watchlist', watchlist.id)}>Delete</button>
+                {watchlists.map((watchlist) => {
+                  const isExpanded = expandedWatchlists.has(watchlist.id);
+                  return (
+                    <React.Fragment key={watchlist.id}>
+                      <tr className={watchlist.isDeleted ? 'deleted' : ''}>
+                        <td>
+                          {watchlist.movieCount > 0 && (
+                            <button
+                              className="admin-expand-button"
+                              onClick={() => toggleWatchlistExpand(watchlist.id)}
+                              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {isExpanded ? '▼' : '▶'}
+                            </button>
+                          )}
+                        </td>
+                        <td>{watchlist.name}</td>
+                        <td>{watchlist.username}</td>
+                        <td>{watchlist.movieCount}</td>
+                        <td>{watchlist.isDeleted ? 'Deleted' : 'Active'}</td>
+                        <td>{new Date(watchlist.createdAt).toLocaleDateString()}</td>
+                        <td>
+                          {watchlist.isDeleted ? (
+                            <button onClick={() => handleRestore('watchlist', watchlist.id)}>Restore</button>
+                          ) : (
+                            <button onClick={() => handleDelete('watchlist', watchlist.id)}>Delete</button>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && watchlist.movies && watchlist.movies.length > 0 && (
+                        <tr>
+                          <td colSpan={7} className="watchlist-expanded-content">
+                            <div className="watchlist-movies-container">
+                              <h4>Movies in "{watchlist.name}"</h4>
+                              <div className="watchlist-movies-grid">
+                                {watchlist.movies.map((movie: any, index: number) => (
+                                  <div key={index} className="watchlist-movie-card">
+                                    {movie.poster && (
+                                      <img 
+                                        src={movie.poster} 
+                                        alt={movie.title}
+                                        className="watchlist-movie-poster"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = 'none';
+                                        }}
+                                      />
+                                    )}
+                                    <div className="watchlist-movie-details">
+                                      <div className="watchlist-movie-header">
+                                        <h5>{movie.title} ({movie.year})</h5>
+                                        <button
+                                          className="watchlist-remove-movie-button"
+                                          onClick={() => handleRemoveMovieFromWatchlist(watchlist.id, movie.tmdbId, movie.title)}
+                                          title="Remove movie from watchlist"
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                      <div className="watchlist-movie-meta">
+                                        <span>Runtime: {movie.runtime} min</span>
+                                        <span className="watchlist-movie-rating">
+                                          Rating: {'★'.repeat(movie.rating)}{'☆'.repeat(5 - movie.rating)}
+                                        </span>
+                                      </div>
+                                      {movie.review && (
+                                        <div className="watchlist-movie-review">
+                                          <strong>Review:</strong>
+                                          <p>{movie.review}</p>
+                                        </div>
+                                      )}
+                                      {!movie.review && (
+                                        <div className="watchlist-movie-review-empty">
+                                          <em>No review provided</em>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                  </tr>
-                ))}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
             {pagination && (
