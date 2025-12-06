@@ -3,6 +3,7 @@ import { adminAPI } from '../../api/admin';
 import type { AdminStats, AdminUser, AdminComment, AdminDiscussion, AdminWatchlist, AdminActivity, TrashItem, AdminFilters } from '../../api/admin';
 import UserDetailView from './UserDetailView';
 import DiscussionDetailView from './DiscussionDetailView';
+import NavBar from '../Component/Navbar';
 import './admin.css';
 
 type TabType = 'stats' | 'users' | 'comments' | 'discussions' | 'watchlists' | 'activity' | 'trash';
@@ -188,11 +189,13 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="admin-dashboard">
-      <div className="admin-header">
-        <h1>Admin Dashboard</h1>
-        {error && <div className="admin-error">{error}</div>}
-      </div>
+    <>
+      <NavBar />
+      <div className="admin-dashboard">
+        <div className="admin-header">
+          <h1>Admin Dashboard</h1>
+          {error && <div className="admin-error">{error}</div>}
+        </div>
 
       <div className="admin-tabs">
         <button className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>
@@ -614,7 +617,8 @@ const AdminDashboard: React.FC = () => {
         )}
       </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

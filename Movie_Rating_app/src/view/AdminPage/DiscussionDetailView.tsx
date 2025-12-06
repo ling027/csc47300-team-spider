@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
+import NavBar from '../Component/Navbar';
 import './admin.css';
 
 interface Reply {
@@ -98,11 +99,13 @@ const DiscussionDetailView: React.FC<DiscussionDetailViewProps> = ({ discussionI
   if (!thread) return null;
 
   return (
-    <div className="admin-detail-view">
-      <div className="admin-detail-header">
-        <button onClick={onBack} className="admin-back-button">← Back to Dashboard</button>
-        <h2>Discussion: {thread.title}</h2>
-      </div>
+    <>
+      <NavBar />
+      <div className="admin-detail-view">
+        <div className="admin-detail-header">
+          <button onClick={onBack} className="admin-back-button">← Back to Dashboard</button>
+          <h2>Discussion: {thread.title}</h2>
+        </div>
 
       {error && <div className="admin-error">{error}</div>}
 
@@ -194,7 +197,8 @@ const DiscussionDetailView: React.FC<DiscussionDetailViewProps> = ({ discussionI
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

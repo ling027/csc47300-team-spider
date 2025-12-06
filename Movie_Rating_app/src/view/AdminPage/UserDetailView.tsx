@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
 import type { AdminUser, AdminActivity, AdminComment, AdminDiscussion } from '../../api/admin';
+import NavBar from '../Component/Navbar';
 import './admin.css';
 
 interface UserDetailViewProps {
@@ -165,11 +166,13 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   if (!user) return null;
 
   return (
-    <div className="admin-detail-view">
-      <div className="admin-detail-header">
-        <button onClick={onBack} className="admin-back-button">← Back to Dashboard</button>
-        <h2>User Details: {user.username}</h2>
-      </div>
+    <>
+      <NavBar />
+      <div className="admin-detail-view">
+        <div className="admin-detail-header">
+          <button onClick={onBack} className="admin-back-button">← Back to Dashboard</button>
+          <h2>User Details: {user.username}</h2>
+        </div>
 
       {error && <div className="admin-error">{error}</div>}
 
@@ -427,7 +430,8 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
