@@ -34,3 +34,23 @@ export function SignedInProtection({ children }: ProtectedRouteProps): React.Rea
 
   return <>{children}</>;
 }
+
+export function AdminProtectedRoute({ children }: ProtectedRouteProps): React.ReactElement {
+  const { isLoggedIn, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isLoggedIn) {
+    alert("You must be logged in to access this page.");
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin()) {
+    alert("Access denied. Admin privileges required.");
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+}

@@ -3,6 +3,7 @@ import "../../main.css";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import NavBar from "../Navbar";
+import Alert from "../../../components/Alert";
 import { tmdb } from "../../../api/tmbd";
 import { useLang } from "../../../i18n/LanguageContext";
 import { useAuth } from "../../../context/AuthContext";
@@ -50,6 +51,15 @@ const MovieDetail: React.FC<MovieDetailProps> = ({
   const numId = Number(id);
   const { isLoggedIn } = useAuth();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
   // Check bookmark state on load
   useEffect(() => {
@@ -59,7 +69,11 @@ const MovieDetail: React.FC<MovieDetailProps> = ({
 
   const toggleFavorite = () => {
     if (!isLoggedIn) {
-      alert("Please sign in to add favorite movies!");
+      setAlert({
+        isOpen: true,
+        message: "Please sign in to add favorite movies!",
+        type: 'warning'
+      });
       return;
     }
 
@@ -136,6 +150,12 @@ const MovieDetail: React.FC<MovieDetailProps> = ({
           </div>
         </div>
       </div>
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </>
   );
 };

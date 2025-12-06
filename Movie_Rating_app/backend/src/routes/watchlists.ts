@@ -11,11 +11,14 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Get all watchlists for authenticated user
-router.get('/', async (req: AuthRequest, res: Response) => {
+router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.userId!;
 
-    const watchlists = await Watchlist.find({ userId })
+    const watchlists = await Watchlist.find({ 
+      userId,
+      isDeleted: { $ne: true }
+    })
       .sort({ createdAt: -1 });
 
     res.json({
@@ -41,7 +44,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 });
 
 // Get specific watchlist
-router.get('/:id', async (req: AuthRequest, res: Response) => {
+router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
     const userId = req.userId!;
@@ -52,10 +55,11 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     res.json({
@@ -90,15 +94,16 @@ router.post(
       .isLength({ max: 100 })
       .withMessage('Watchlist name cannot exceed 100 characters')
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const userId = req.userId!;
@@ -146,15 +151,16 @@ router.put(
       .isLength({ max: 100 })
       .withMessage('Watchlist name cannot exceed 100 characters')
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const watchlistId = req.params.id;
@@ -168,10 +174,11 @@ router.put(
       );
 
       if (!watchlist) {
-        return res.status(404).json({
+        res.status(404).json({
           status: 'error',
           message: 'Watchlist not found'
         });
+        return;
       }
 
       res.json({
@@ -198,7 +205,7 @@ router.put(
 );
 
 // Delete watchlist
-router.delete('/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
     const userId = req.userId!;
@@ -209,10 +216,11 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     res.json({
@@ -240,15 +248,16 @@ router.post(
     body('review').optional().trim().isLength({ max: 500 }).withMessage('Review cannot exceed 500 characters'),
     body('poster').optional().trim()
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const watchlistId = req.params.id;
@@ -257,23 +266,26 @@ router.post(
 
       const watchlist = await Watchlist.findOne({
         _id: watchlistId,
-        userId
+        userId,
+        isDeleted: { $ne: true }
       });
 
       if (!watchlist) {
-        return res.status(404).json({
+        res.status(404).json({
           status: 'error',
           message: 'Watchlist not found'
         });
+        return;
       }
 
       // Check if movie already exists in watchlist
       const movieExists = watchlist.movies.some(m => m.tmdbId === tmdbId);
       if (movieExists) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Movie already exists in this watchlist'
         });
+        return;
       }
 
       // Add movie to watchlist
@@ -320,17 +332,18 @@ router.post(
 );
 
 // Remove movie from watchlist
-router.delete('/:id/movies/:movieId', async (req: AuthRequest, res: Response) => {
+router.delete('/:id/movies/:movieId', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const watchlistId = req.params.id;
     const movieTmdbId = parseInt(req.params.movieId);
     const userId = req.userId!;
 
     if (isNaN(movieTmdbId)) {
-      return res.status(400).json({
+      res.status(400).json({
         status: 'error',
         message: 'Invalid movie ID'
       });
+      return;
     }
 
     const watchlist = await Watchlist.findOne({
@@ -339,20 +352,22 @@ router.delete('/:id/movies/:movieId', async (req: AuthRequest, res: Response) =>
     });
 
     if (!watchlist) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Watchlist not found'
       });
+      return;
     }
 
     const initialLength = watchlist.movies.length;
     watchlist.movies = watchlist.movies.filter(m => m.tmdbId !== movieTmdbId);
 
     if (watchlist.movies.length === initialLength) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Movie not found in watchlist'
       });
+      return;
     }
 
     await watchlist.save();

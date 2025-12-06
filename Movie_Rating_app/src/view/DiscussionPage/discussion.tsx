@@ -3,6 +3,7 @@ import './discussion.css';
 import '../main.css';
 import NavBar from '../Component/Navbar';
 import MinimalNavbar from '../Component/MinimalNavbar';
+import Alert from '../../components/Alert';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 import { discussionsAPI, type DiscussionThread, type DiscussionReply } from '../../api/discussions';
 import { useAuth } from '../../context/AuthContext';
@@ -47,6 +48,15 @@ function DiscussionPage(): React.ReactElement {
   const [replyContent, setReplyContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
   // Fetch threads on mount
   useEffect(() => {
@@ -179,7 +189,11 @@ function DiscussionPage(): React.ReactElement {
       setSearchResults([]);
     } catch (error) {
       console.error('Error fetching movie details:', error);
-      alert('Failed to load movie details. Please try again.');
+      setAlert({
+        isOpen: true,
+        message: 'Failed to load movie details. Please try again.',
+        type: 'error'
+      });
     }
   };
 
@@ -189,12 +203,20 @@ function DiscussionPage(): React.ReactElement {
     const movieTmdbId = selectedMovie ? selectedMovie.tmdbId : 0;
     
     if (!title.trim() || !movieTitle || !content.trim()) {
-      alert('Please fill in all required fields (title, movie, and content)');
+      setAlert({
+        isOpen: true,
+        message: 'Please fill in all required fields (title, movie, and content)',
+        type: 'warning'
+      });
       return;
     }
 
     if (!selectedMovie && !newThread.movie.trim()) {
-      alert('Please search and select a movie from TMDB');
+      setAlert({
+        isOpen: true,
+        message: 'Please search and select a movie from TMDB',
+        type: 'warning'
+      });
       return;
     }
 
@@ -227,13 +249,21 @@ function DiscussionPage(): React.ReactElement {
     } catch (err: any) {
       setError(err.message || 'Failed to create thread');
       console.error('Error creating thread:', err);
-      alert(err.message || 'Failed to create thread');
+      setAlert({
+        isOpen: true,
+        message: err.message || 'Failed to create thread',
+        type: 'error'
+      });
     }
   };
 
   const handleReplyClick = (threadId: string): void => {
     if (!isLoggedIn) {
-      alert('Please log in to reply');
+      setAlert({
+        isOpen: true,
+        message: 'Please log in to reply',
+        type: 'warning'
+      });
       return;
     }
     setReplyingToThread(threadId);
@@ -247,7 +277,11 @@ function DiscussionPage(): React.ReactElement {
 
   const handleSubmitReply = async (threadId: string): Promise<void> => {
     if (!replyContent.trim()) {
-      alert('Please enter a reply');
+      setAlert({
+        isOpen: true,
+        message: 'Please enter a reply',
+        type: 'warning'
+      });
       return;
     }
 
@@ -278,7 +312,11 @@ function DiscussionPage(): React.ReactElement {
     } catch (err: any) {
       setError(err.message || 'Failed to submit reply');
       console.error('Error submitting reply:', err);
-      alert(err.message || 'Failed to submit reply');
+      setAlert({
+        isOpen: true,
+        message: err.message || 'Failed to submit reply',
+        type: 'error'
+      });
     }
   };
 
@@ -574,6 +612,12 @@ function DiscussionPage(): React.ReactElement {
           </div>
         </div>
       </div>
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </div>
   );
 }

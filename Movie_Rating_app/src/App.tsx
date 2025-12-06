@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute, AdminProtectedRoute } from "./components/ProtectedRoute";
 import { SignedInProtection } from "./components/ProtectedRoute";
 import './App.css'
 import Landing from "./view/LandingPage/Landing"
@@ -15,6 +15,7 @@ import {MovieDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 import ContactUs from "./view/ContactUs/ContactUs.jsx"
 import {UCMoiveDetailPage} from "./view/MovieDetailPage/MovieDetailPage.tsx"
 import Profile from "./view/Profile/profile.tsx"
+import AdminDashboard from "./view/AdminPage/AdminDashboard.tsx"
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/ContactUs" element={<ContactUs/>}/>
             <Route path="/movie/coming-soon/:id/:title" element={<UCMoiveDetailPage/>}/>
             <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>}/>
+            <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard/></AdminProtectedRoute>}/>
           </Routes>
         </Router>
     </LanguageProvider>

@@ -9,9 +9,11 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get all discussion threads
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
-    const threads = await DiscussionThread.find()
+    const threads = await DiscussionThread.find({ 
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username')
       .sort({ lastActivity: -1 });
 
@@ -43,19 +45,23 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // Get specific thread with replies
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const threadId = req.params.id;
 
-    const thread = await DiscussionThread.findById(threadId)
+    const thread = await DiscussionThread.findOne({
+      _id: threadId,
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username')
       .populate('replies.userId', 'username');
 
     if (!thread) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Thread not found'
       });
+      return;
     }
 
     // Increment view count
@@ -74,7 +80,7 @@ router.get('/:id', async (req: Request, res: Response) => {
           content: thread.content,
           tags: thread.tags,
           replies: thread.replies.map(reply => ({
-            id: reply._id,
+            id: (reply as any)._id,
             author: reply.author,
             content: reply.content,
             timestamp: reply.timestamp
@@ -123,15 +129,16 @@ router.post(
       .isArray()
       .withMessage('Tags must be an array')
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const userId = req.userId!;
@@ -140,10 +147,11 @@ router.post(
       // Get user for author name
       const user = await User.findById(userId);
       if (!user) {
-        return res.status(404).json({
+        res.status(404).json({
           status: 'error',
           message: 'User not found'
         });
+        return;
       }
 
       const thread = new DiscussionThread({
@@ -212,15 +220,16 @@ router.post(
       .isLength({ max: 1000 })
       .withMessage('Reply cannot exceed 1000 characters')
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const threadId = req.params.id;
@@ -229,19 +238,21 @@ router.post(
 
       const thread = await DiscussionThread.findById(threadId);
       if (!thread) {
-        return res.status(404).json({
+        res.status(404).json({
           status: 'error',
           message: 'Thread not found'
         });
+        return;
       }
 
       // Get user for author name
       const user = await User.findById(userId);
       if (!user) {
-        return res.status(404).json({
+        res.status(404).json({
           status: 'error',
           message: 'User not found'
         });
+        return;
       }
 
       const newReply: IDiscussionReply = {
@@ -254,6 +265,9 @@ router.post(
       thread.replies.push(newReply);
       thread.lastActivity = new Date();
       await thread.save();
+
+      // Get the saved reply (Mongoose adds _id after save)
+      const savedReply = thread.replies[thread.replies.length - 1];
 
       // Track activity
       try {
@@ -271,10 +285,10 @@ router.post(
         message: 'Reply added successfully',
         data: {
           reply: {
-            id: newReply._id,
-            author: newReply.author,
-            content: newReply.content,
-            timestamp: newReply.timestamp
+            id: (savedReply as any)._id,
+            author: savedReply.author,
+            content: savedReply.content,
+            timestamp: savedReply.timestamp
           }
         }
       });
@@ -289,7 +303,7 @@ router.post(
 );
 
 // Increment view count
-router.put('/:id/views', async (req: Request, res: Response) => {
+router.put('/:id/views', async (req: Request, res: Response): Promise<void> => {
   try {
     const threadId = req.params.id;
 
@@ -300,10 +314,11 @@ router.put('/:id/views', async (req: Request, res: Response) => {
     );
 
     if (!thread) {
-      return res.status(404).json({
+      res.status(404).json({
         status: 'error',
         message: 'Thread not found'
       });
+      return;
     }
 
     res.json({
@@ -322,4 +337,3 @@ router.put('/:id/views', async (req: Request, res: Response) => {
 });
 
 export default router;
-

@@ -10,6 +10,7 @@ import userRoutes from './routes/users.js';
 import watchlistRoutes from './routes/watchlists.js';
 import discussionRoutes from './routes/discussions.js';
 import commentRoutes from './routes/comments.js';
+import adminRoutes from './routes/admin.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/watchlists', watchlistRoutes);
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/movies', commentRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

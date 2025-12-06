@@ -5,6 +5,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   fullname: string;
+  isAdmin: boolean;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +40,18 @@ const UserSchema = new Schema<IUser>(
       required: [true, 'Full name is required'],
       trim: true,
       maxlength: [100, 'Full name cannot exceed 100 characters']
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   {

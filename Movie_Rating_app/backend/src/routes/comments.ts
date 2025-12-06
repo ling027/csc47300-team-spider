@@ -9,18 +9,22 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get all comments for a movie
-router.get('/:movieId/comments', async (req: Request, res: Response) => {
+router.get('/:movieId/comments', async (req: Request, res: Response): Promise<void> => {
   try {
     const movieTmdbId = parseInt(req.params.movieId);
 
     if (isNaN(movieTmdbId)) {
-      return res.status(400).json({
+      res.status(400).json({
         status: 'error',
         message: 'Invalid movie ID'
       });
+      return;
     }
 
-    const comments = await MovieComment.find({ movieTmdbId })
+    const comments = await MovieComment.find({ 
+      movieTmdbId,
+      isDeleted: { $ne: true }
+    })
       .populate('userId', 'username email')
       .sort({ createdAt: -1 });
 
@@ -58,15 +62,16 @@ router.post(
       .isLength({ max: 500 })
       .withMessage('Comment cannot exceed 500 characters')
   ],
-  async (req: AuthRequest, res: Response) => {
+  async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Validation failed',
           errors: errors.array()
         });
+        return;
       }
 
       const movieTmdbId = parseInt(req.params.movieId);
@@ -74,10 +79,11 @@ router.post(
       const { text } = req.body;
 
       if (isNaN(movieTmdbId)) {
-        return res.status(400).json({
+        res.status(400).json({
           status: 'error',
           message: 'Invalid movie ID'
         });
+        return;
       }
 
       const comment = new MovieComment({

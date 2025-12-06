@@ -4,6 +4,8 @@ export interface IMovieComment extends Document {
   userId: Types.ObjectId;
   movieTmdbId: number;
   text: string;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
 }
 
@@ -25,6 +27,14 @@ const MovieCommentSchema = new Schema<IMovieComment>(
       required: [true, 'Comment text is required'],
       trim: true,
       maxlength: [500, 'Comment cannot exceed 500 characters']
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   {

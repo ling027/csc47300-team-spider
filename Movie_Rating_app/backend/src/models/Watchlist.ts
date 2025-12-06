@@ -14,6 +14,8 @@ export interface IWatchlist extends Document {
   userId: Types.ObjectId;
   name: string;
   movies: IWatchlistMovie[];
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,6 +73,14 @@ const WatchlistSchema = new Schema<IWatchlist>(
     movies: {
       type: [WatchlistMovieSchema],
       default: []
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   {

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ContactUs.css";
 import "../main.css"
 import NavBar from "../Component/Navbar"
+import Alert from "../../components/Alert";
 import { useLang } from "../../i18n/LanguageContext.jsx"; 
 
 
@@ -10,6 +11,11 @@ function ContactUs() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState(null);
+    const [alert, setAlert] = useState({
+        isOpen: false,
+        message: '',
+        type: 'info'
+    });
 
    const [formData, setFormData] = useState({
     name: "",
@@ -34,13 +40,25 @@ function ContactUs() {
 
       const result = await response.json();
       if (result.success) {
-        alert("Message sent successfully!");
+        setAlert({
+          isOpen: true,
+          message: "Message sent successfully!",
+          type: 'success'
+        });
         setFormData({ name: "", email: "", message: "" });
       } else {
-        alert("Failed to send message. Please try again.");
+        setAlert({
+          isOpen: true,
+          message: "Failed to send message. Please try again.",
+          type: 'error'
+        });
       }
     } catch (error) {
-      alert("An error occurred. Please try again.");
+      setAlert({
+        isOpen: true,
+        message: "An error occurred. Please try again.",
+        type: 'error'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -101,6 +119,12 @@ function ContactUs() {
                 </button>
             </form>
         </div>
+        <Alert
+          isOpen={alert.isOpen}
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert({ ...alert, isOpen: false })}
+        />
         </div>
     );
 }
