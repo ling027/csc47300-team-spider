@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { adminAPI } from '../../api/admin';
 import type { AdminComment } from '../../api/admin';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Alert from '../../components/Alert';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -17,30 +19,83 @@ const CommentDetailView: React.FC<CommentDetailViewProps> = ({
   onDelete, 
   onRestore 
 }) => {
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) return;
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'restore' | 'default';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
-    try {
-      await adminAPI.deleteComment(comment.id);
-      alert('Comment deleted successfully');
-      if (onDelete) onDelete();
-      onBack();
-    } catch (err: any) {
-      alert(err.message || 'Failed to delete comment');
-    }
+  const handleDelete = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this comment?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          await adminAPI.deleteComment(comment.id);
+          setAlert({
+            isOpen: true,
+            message: 'Comment deleted successfully',
+            type: 'success'
+          });
+          if (onDelete) onDelete();
+          setTimeout(() => onBack(), 1000);
+        } catch (err: any) {
+          setAlert({
+            isOpen: true,
+            message: err.message || 'Failed to delete comment',
+            type: 'error'
+          });
+        }
+      }
+    });
   };
 
-  const handleRestore = async () => {
-    if (!window.confirm('Are you sure you want to restore this comment?')) return;
-
-    try {
-      await adminAPI.restoreComment(comment.id);
-      alert('Comment restored successfully');
-      if (onRestore) onRestore();
-      onBack();
-    } catch (err: any) {
-      alert(err.message || 'Failed to restore comment');
-    }
+  const handleRestore = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Restore',
+      message: 'Are you sure you want to restore this comment?',
+      type: 'restore',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          await adminAPI.restoreComment(comment.id);
+          setAlert({
+            isOpen: true,
+            message: 'Comment restored successfully',
+            type: 'success'
+          });
+          if (onRestore) onRestore();
+          setTimeout(() => onBack(), 1000);
+        } catch (err: any) {
+          setAlert({
+            isOpen: true,
+            message: err.message || 'Failed to restore comment',
+            type: 'error'
+          });
+        }
+      }
+    });
   };
 
   return (
@@ -104,6 +159,21 @@ const CommentDetailView: React.FC<CommentDetailViewProps> = ({
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : 'Restore'}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </>
   );
 };

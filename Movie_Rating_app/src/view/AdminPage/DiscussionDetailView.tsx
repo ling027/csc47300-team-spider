@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Alert from '../../components/Alert';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -20,6 +22,28 @@ const DiscussionDetailView: React.FC<DiscussionDetailViewProps> = ({ discussionI
   const [thread, setThread] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'restore' | 'default';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
   useEffect(() => {
     loadDiscussion();
@@ -38,49 +62,74 @@ const DiscussionDetailView: React.FC<DiscussionDetailViewProps> = ({ discussionI
     }
   };
 
-  const handleDeleteThread = async () => {
+  const handleDeleteThread = () => {
     if (!thread) return;
-    if (!window.confirm(`Are you sure you want to delete this discussion thread?`)) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteDiscussion(discussionId);
-      alert('Discussion deleted successfully');
-      onBack();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete discussion');
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this discussion thread?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteDiscussion(discussionId);
+          setAlert({
+            isOpen: true,
+            message: 'Discussion deleted successfully',
+            type: 'success'
+          });
+          setTimeout(() => onBack(), 1000);
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete discussion');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
-  const handleDeleteReply = async (replyId: string) => {
-    if (!window.confirm('Are you sure you want to delete this reply?')) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteReply(discussionId, replyId);
-      loadDiscussion(); // Reload to refresh replies
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete reply');
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteReply = (replyId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this reply?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteReply(discussionId, replyId);
+          loadDiscussion(); // Reload to refresh replies
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete reply');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
-  const handleRestoreThread = async () => {
+  const handleRestoreThread = () => {
     if (!thread) return;
-    if (!window.confirm(`Are you sure you want to restore this discussion thread?`)) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.restoreDiscussion(discussionId);
-      loadDiscussion();
-    } catch (err: any) {
-      setError(err.message || 'Failed to restore discussion');
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Restore',
+      message: 'Are you sure you want to restore this discussion thread?',
+      type: 'restore',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.restoreDiscussion(discussionId);
+          loadDiscussion();
+        } catch (err: any) {
+          setError(err.message || 'Failed to restore discussion');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   if (loading && !thread) {
@@ -198,6 +247,21 @@ const DiscussionDetailView: React.FC<DiscussionDetailViewProps> = ({ discussionI
         </div>
       </div>
       </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : 'Restore'}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </>
   );
 };

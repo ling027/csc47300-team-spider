@@ -3,6 +3,8 @@ import './watchlist.css';
 import '../main.css';
 import NavBar from '../Component/Navbar';
 import MinimalNavbar from '../Component/MinimalNavbar';
+import Alert from '../../components/Alert';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { tmdb, type Movie as TmdbMovie } from '../../api/tmbd';
 import { watchlistsAPI, type Watchlist, type WatchlistMovie } from '../../api/watchlists';
 import { useAuth } from '../../context/AuthContext';
@@ -120,6 +122,30 @@ function WatchList(): React.ReactElement {
   const [searchResults, setSearchResults] = useState<TmdbMovie[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
+  
+  // Alert and ConfirmDialog state
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'restore' | 'default';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
 
   // Fetch watchlists on mount
   useEffect(() => {
@@ -187,26 +213,49 @@ function WatchList(): React.ReactElement {
     }
   };
 
-  const deleteList = async (event: React.MouseEvent<HTMLButtonElement>, listId: string): Promise<void> => {
+  const deleteList = (event: React.MouseEvent<HTMLButtonElement>, listId: string): void => {
     event.stopPropagation();
     if (lists.length <= 1) {
-      alert('You must have at least one watchlist');
+      setAlert({
+        isOpen: true,
+        message: 'You must have at least one watchlist',
+        type: 'warning'
+      });
       return;
     }
 
-    try {
-      setError(null);
-      await watchlistsAPI.delete(listId);
-      const newLists = lists.filter(l => l.id !== listId);
-      setLists(newLists);
-      if (selectedListId === listId) {
-        setSelectedListId(newLists[0]?.id || null);
+    const listToDelete = lists.find(l => l.id === listId);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Watchlist',
+      message: `Are you sure you want to delete "${listToDelete?.name || 'this watchlist'}"? This action cannot be undone.`,
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setError(null);
+          await watchlistsAPI.delete(listId);
+          const newLists = lists.filter(l => l.id !== listId);
+          setLists(newLists);
+          if (selectedListId === listId) {
+            setSelectedListId(newLists[0]?.id || null);
+          }
+          setAlert({
+            isOpen: true,
+            message: 'Watchlist deleted successfully',
+            type: 'success'
+          });
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete watchlist');
+          console.error('Error deleting watchlist:', err);
+          setAlert({
+            isOpen: true,
+            message: err.message || 'Failed to delete watchlist',
+            type: 'error'
+          });
+        }
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete watchlist');
-      console.error('Error deleting watchlist:', err);
-      alert(err.message || 'Failed to delete watchlist');
-    }
+    });
   };
 
   const toggleAddMovieForm = (): void => {
@@ -305,7 +354,11 @@ function WatchList(): React.ReactElement {
       setSearchResults([]);
     } catch (error) {
       console.error('Error fetching movie details:', error);
-      alert('Failed to load movie details. Please try again.');
+      setAlert({
+        isOpen: true,
+        message: 'Failed to load movie details. Please try again.',
+        type: 'error'
+      });
     }
   };
 
@@ -313,17 +366,29 @@ function WatchList(): React.ReactElement {
     const { rating, review } = newMovie;
     
     if (!selectedListId) {
-      alert('Please select a watchlist');
+      setAlert({
+        isOpen: true,
+        message: 'Please select a watchlist',
+        type: 'warning'
+      });
       return;
     }
     
     if (!selectedMovie && !newMovie.title.trim()) {
-      alert('Please search and select a movie from the API, or enter a movie title');
+      setAlert({
+        isOpen: true,
+        message: 'Please search and select a movie from the API, or enter a movie title',
+        type: 'warning'
+      });
       return;
     }
     
     if (rating === 0) {
-      alert('Please provide a rating');
+      setAlert({
+        isOpen: true,
+        message: 'Please provide a rating',
+        type: 'warning'
+      });
       return;
     }
 
@@ -361,10 +426,19 @@ function WatchList(): React.ReactElement {
       setMovieSearchQuery('');
       setSearchResults([]);
       setSelectedMovie(null);
+      setAlert({
+        isOpen: true,
+        message: 'Movie added successfully',
+        type: 'success'
+      });
     } catch (err: any) {
       setError(err.message || 'Failed to add movie');
       console.error('Error adding movie:', err);
-      alert(err.message || 'Failed to add movie');
+      setAlert({
+        isOpen: true,
+        message: err.message || 'Failed to add movie',
+        type: 'error'
+      });
     }
   };
 
@@ -674,17 +748,35 @@ function WatchList(): React.ReactElement {
                               <td className="right">
                                 <button 
                                   className="btn-remove" 
-                                  onClick={async () => {
+                                  onClick={() => {
                                     if (!selectedListId) return;
-                                    try {
-                                      setError(null);
-                                      await watchlistsAPI.removeMovie(selectedListId, movie.id);
-                                      await fetchWatchlists();
-                                    } catch (err: any) {
-                                      setError(err.message || 'Failed to remove movie');
-                                      console.error('Error removing movie:', err);
-                                      alert(err.message || 'Failed to remove movie');
-                                    }
+                                    setConfirmDialog({
+                                      isOpen: true,
+                                      title: 'Remove Movie',
+                                      message: `Are you sure you want to remove "${movie.title}" from this watchlist?`,
+                                      type: 'delete',
+                                      onConfirm: async () => {
+                                        setConfirmDialog({ ...confirmDialog, isOpen: false });
+                                        try {
+                                          setError(null);
+                                          await watchlistsAPI.removeMovie(selectedListId, movie.id);
+                                          await fetchWatchlists();
+                                          setAlert({
+                                            isOpen: true,
+                                            message: 'Movie removed successfully',
+                                            type: 'success'
+                                          });
+                                        } catch (err: any) {
+                                          setError(err.message || 'Failed to remove movie');
+                                          console.error('Error removing movie:', err);
+                                          setAlert({
+                                            isOpen: true,
+                                            message: err.message || 'Failed to remove movie',
+                                            type: 'error'
+                                          });
+                                        }
+                                      }
+                                    });
                                   }}
                                 >
                                   Remove
@@ -720,6 +812,21 @@ function WatchList(): React.ReactElement {
           )}
         </div>
       </div>
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : 'Confirm'}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../api/admin';
 import type { AdminUser, AdminActivity, AdminComment, AdminDiscussion, AdminWatchlist } from '../../api/admin';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Alert from '../../components/Alert';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -21,6 +23,28 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const [expandedWatchlists, setExpandedWatchlists] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'restore' | 'default';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
   useEffect(() => {
     loadUserDetails();
@@ -56,32 +80,46 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
     setExpandedItems(newExpanded);
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!window.confirm('Are you sure you want to delete this comment?')) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteComment(commentId);
-      loadUserDetails();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete comment');
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteComment = (commentId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this comment?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteComment(commentId);
+          loadUserDetails();
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete comment');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
-  const handleDeleteDiscussion = async (discussionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this discussion?')) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteDiscussion(discussionId);
-      loadUserDetails();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete discussion');
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteDiscussion = (discussionId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this discussion?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteDiscussion(discussionId);
+          loadUserDetails();
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete discussion');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   const handleRestoreComment = async (commentId: string) => {
@@ -108,18 +146,25 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
     }
   };
 
-  const handleDeleteReply = async (threadId: string, replyId: string) => {
-    if (!window.confirm('Are you sure you want to delete this reply?')) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteReply(threadId, replyId);
-      loadUserDetails();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete reply');
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteReply = (threadId: string, replyId: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this reply?',
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteReply(threadId, replyId);
+          loadUserDetails();
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete reply');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   const toggleWatchlistExpand = (watchlistId: string) => {
@@ -134,65 +179,90 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
     });
   };
 
-  const handleRemoveMovieFromWatchlist = async (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
-    if (!window.confirm(`Are you sure you want to remove "${movieTitle}" from this watchlist?`)) return;
-
-    try {
-      setLoading(true);
-      
-      // Check if this is the last movie in the watchlist
-      const watchlist = watchlists.find(w => w.id === watchlistId);
-      const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
-      
-      await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
-      
-      // Reload user details to update the UI
-      await loadUserDetails();
-      
-      // Close the expanded view if the watchlist becomes empty
-      if (willBeEmpty) {
-        setExpandedWatchlists(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(watchlistId);
-          return newSet;
-        });
+  const handleRemoveMovieFromWatchlist = (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Remove Movie',
+      message: `Are you sure you want to remove "${movieTitle}" from this watchlist?`,
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          
+          // Check if this is the last movie in the watchlist
+          const watchlist = watchlists.find(w => w.id === watchlistId);
+          const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
+          
+          await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
+          
+          // Reload user details to update the UI
+          await loadUserDetails();
+          
+          // Close the expanded view if the watchlist becomes empty
+          if (willBeEmpty) {
+            setExpandedWatchlists(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(watchlistId);
+              return newSet;
+            });
+          }
+        } catch (err: any) {
+          setError(err.message || 'Failed to remove movie from watchlist');
+        } finally {
+          setLoading(false);
+        }
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to remove movie from watchlist');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!user) return;
-    if (!window.confirm(`Are you sure you want to delete user "${user.username}"?`)) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.deleteUser(userId);
-      alert('User deleted successfully');
-      onBack();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete user');
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: `Are you sure you want to delete user "${user.username}"?`,
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.deleteUser(userId);
+          setAlert({
+            isOpen: true,
+            message: 'User deleted successfully',
+            type: 'success'
+          });
+          setTimeout(() => onBack(), 1000);
+        } catch (err: any) {
+          setError(err.message || 'Failed to delete user');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
-  const handleRestore = async () => {
+  const handleRestore = () => {
     if (!user) return;
-    if (!window.confirm(`Are you sure you want to restore user "${user.username}"?`)) return;
-
-    try {
-      setLoading(true);
-      await adminAPI.restoreUser(userId);
-      loadUserDetails();
-    } catch (err: any) {
-      setError(err.message || 'Failed to restore user');
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Restore',
+      message: `Are you sure you want to restore user "${user.username}"?`,
+      type: 'restore',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          await adminAPI.restoreUser(userId);
+          loadUserDetails();
+        } catch (err: any) {
+          setError(err.message || 'Failed to restore user');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   if (loading && !user) {
@@ -561,6 +631,21 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
         </div>
       </div>
       </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : confirmDialog.type === 'restore' ? 'Restore' : 'Confirm'}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </>
   );
 };

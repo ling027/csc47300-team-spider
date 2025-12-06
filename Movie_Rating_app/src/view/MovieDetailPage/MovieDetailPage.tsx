@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { movies, upcomingMovies } from "./movies";
 import MovieDetailCard from "../Component/MovieDetailCard/MovieDetail";
+import Alert from "../../components/Alert";
 import "./MovieDetailPage.css";
 import { useLang } from "../../i18n/LanguageContext.jsx";
 import { tmdb } from "../../api/tmbd";
@@ -110,6 +111,15 @@ function MDP({ source }: { source: any[] }) {
   const [comments, setComments] = useState<MovieComment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
  
   // Fetch comments when movie ID changes
   useEffect(() => {
@@ -131,7 +141,11 @@ function MDP({ source }: { source: any[] }) {
 
   const handleCommentSubmit = async () => {
     if (!isLoggedIn) {
-      alert("Please Sign in to submit comments!");
+      setAlert({
+        isOpen: true,
+        message: "Please Sign in to submit comments!",
+        type: 'warning'
+      });
       return;
     }
     if (!commentInput.trim()) return;
@@ -145,10 +159,19 @@ function MDP({ source }: { source: any[] }) {
       
       setComments([response.data.comment, ...comments]);
       setCommentInput("");
+      setAlert({
+        isOpen: true,
+        message: 'Comment submitted successfully',
+        type: 'success'
+      });
     } catch (err: any) {
       setCommentError(err.message || 'Failed to submit comment');
       console.error('Error submitting comment:', err);
-      alert(err.message || 'Failed to submit comment');
+      setAlert({
+        isOpen: true,
+        message: err.message || 'Failed to submit comment',
+        type: 'error'
+      });
     } finally {
       setCommentLoading(false);
     }
@@ -281,6 +304,12 @@ function MDP({ source }: { source: any[] }) {
           </section>
         </section>
       </div>
+      <Alert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type { AdminStats, AdminUser, AdminComment, AdminDiscussion, AdminWatchli
 import UserDetailView from './UserDetailView';
 import DiscussionDetailView from './DiscussionDetailView';
 import CommentDetailView from './CommentDetailView';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import NavBar from '../Component/Navbar';
 import './admin.css';
 
@@ -29,6 +30,19 @@ const AdminDashboard: React.FC = () => {
   });
   const [pagination, setPagination] = useState<any>(null);
   const [expandedWatchlists, setExpandedWatchlists] = useState<Set<string>>(new Set());
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'delete' | 'restore' | 'default';
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     loadStats();
@@ -133,54 +147,68 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleDelete = async (type: string, id: string) => {
-    if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+  const handleDelete = (type: string, id: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Delete',
+      message: `Are you sure you want to delete this ${type}?`,
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          if (type === 'user') await adminAPI.deleteUser(id);
+          else if (type === 'comment') await adminAPI.deleteComment(id);
+          else if (type === 'discussion') await adminAPI.deleteDiscussion(id);
+          else if (type === 'watchlist') await adminAPI.deleteWatchlist(id);
 
-    try {
-      setLoading(true);
-      if (type === 'user') await adminAPI.deleteUser(id);
-      else if (type === 'comment') await adminAPI.deleteComment(id);
-      else if (type === 'discussion') await adminAPI.deleteDiscussion(id);
-      else if (type === 'watchlist') await adminAPI.deleteWatchlist(id);
-
-      // Reload current tab
-      if (activeTab === 'users') loadUsers();
-      else if (activeTab === 'comments') loadComments();
-      else if (activeTab === 'discussions') loadDiscussions();
-      else if (activeTab === 'watchlists') loadWatchlists();
-      else if (activeTab === 'trash') loadTrash();
-      
-      loadStats();
-    } catch (err: any) {
-      setError(err.message || `Failed to delete ${type}`);
-    } finally {
-      setLoading(false);
-    }
+          // Reload current tab
+          if (activeTab === 'users') loadUsers();
+          else if (activeTab === 'comments') loadComments();
+          else if (activeTab === 'discussions') loadDiscussions();
+          else if (activeTab === 'watchlists') loadWatchlists();
+          else if (activeTab === 'trash') loadTrash();
+          
+          loadStats();
+        } catch (err: any) {
+          setError(err.message || `Failed to delete ${type}`);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
-  const handleRestore = async (type: string, id: string) => {
-    if (!window.confirm(`Are you sure you want to restore this ${type}?`)) return;
+  const handleRestore = (type: string, id: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Confirm Restore',
+      message: `Are you sure you want to restore this ${type}?`,
+      type: 'restore',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          if (type === 'user') await adminAPI.restoreUser(id);
+          else if (type === 'comment') await adminAPI.restoreComment(id);
+          else if (type === 'discussion') await adminAPI.restoreDiscussion(id);
+          else if (type === 'watchlist') await adminAPI.restoreWatchlist(id);
 
-    try {
-      setLoading(true);
-      if (type === 'user') await adminAPI.restoreUser(id);
-      else if (type === 'comment') await adminAPI.restoreComment(id);
-      else if (type === 'discussion') await adminAPI.restoreDiscussion(id);
-      else if (type === 'watchlist') await adminAPI.restoreWatchlist(id);
-
-      // Reload current tab
-      if (activeTab === 'trash') loadTrash();
-      else if (activeTab === 'users') loadUsers();
-      else if (activeTab === 'comments') loadComments();
-      else if (activeTab === 'discussions') loadDiscussions();
-      else if (activeTab === 'watchlists') loadWatchlists();
-      
-      loadStats();
-    } catch (err: any) {
-      setError(err.message || `Failed to restore ${type}`);
-    } finally {
-      setLoading(false);
-    }
+          // Reload current tab
+          if (activeTab === 'trash') loadTrash();
+          else if (activeTab === 'users') loadUsers();
+          else if (activeTab === 'comments') loadComments();
+          else if (activeTab === 'discussions') loadDiscussions();
+          else if (activeTab === 'watchlists') loadWatchlists();
+          
+          loadStats();
+        } catch (err: any) {
+          setError(err.message || `Failed to restore ${type}`);
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   const handleFilterChange = (key: string, value: any) => {
@@ -203,34 +231,41 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  const handleRemoveMovieFromWatchlist = async (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
-    if (!window.confirm(`Are you sure you want to remove "${movieTitle}" from this watchlist?`)) return;
-
-    try {
-      setLoading(true);
-      
-      // Check if this is the last movie in the watchlist
-      const watchlist = watchlists.find(w => w.id === watchlistId);
-      const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
-      
-      await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
-      
-      // Reload watchlists to update the UI
-      await loadWatchlists();
-      
-      // Close the expanded view if the watchlist becomes empty
-      if (willBeEmpty) {
-        setExpandedWatchlists(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(watchlistId);
-          return newSet;
-        });
+  const handleRemoveMovieFromWatchlist = (watchlistId: string, movieTmdbId: number, movieTitle: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Remove Movie',
+      message: `Are you sure you want to remove "${movieTitle}" from this watchlist?`,
+      type: 'delete',
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+        try {
+          setLoading(true);
+          
+          // Check if this is the last movie in the watchlist
+          const watchlist = watchlists.find(w => w.id === watchlistId);
+          const willBeEmpty = watchlist && watchlist.movies && watchlist.movies.length === 1;
+          
+          await adminAPI.removeMovieFromWatchlist(watchlistId, movieTmdbId);
+          
+          // Reload watchlists to update the UI
+          await loadWatchlists();
+          
+          // Close the expanded view if the watchlist becomes empty
+          if (willBeEmpty) {
+            setExpandedWatchlists(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(watchlistId);
+              return newSet;
+            });
+          }
+        } catch (err: any) {
+          setError(err.message || 'Failed to remove movie from watchlist');
+        } finally {
+          setLoading(false);
+        }
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to remove movie from watchlist');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -780,6 +815,15 @@ const AdminDashboard: React.FC = () => {
       </div>
       )}
       </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.type === 'delete' ? 'Delete' : confirmDialog.type === 'restore' ? 'Restore' : 'Confirm'}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </>
   );
 };
